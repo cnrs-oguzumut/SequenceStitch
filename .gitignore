@@ -2,6 +2,9 @@
 .build/
 build/
 
+# Bundled FFmpeg binary (too large for Git)
+Resources/ffmpeg
+
 # macOS
 .DS_Store
 *.swp

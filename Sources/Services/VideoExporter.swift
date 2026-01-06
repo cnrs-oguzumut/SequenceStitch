@@ -26,8 +26,17 @@ class VideoExporter: ObservableObject {
     private var currentProcess: Process?
     private var isCancelled = false
     
-    /// Finds FFmpeg binary in common locations
+    /// Finds FFmpeg binary - checks bundled version first, then Homebrew
     private func findFFmpeg() -> URL? {
+        // 1. Check for bundled FFmpeg in app Resources
+        if let resourcePath = Bundle.main.resourcePath {
+            let bundledFFmpeg = URL(fileURLWithPath: resourcePath).appendingPathComponent("ffmpeg")
+            if FileManager.default.isExecutableFile(atPath: bundledFFmpeg.path) {
+                return bundledFFmpeg
+            }
+        }
+        
+        // 2. Fall back to Homebrew/system paths
         let possiblePaths = [
             "/opt/homebrew/bin/ffmpeg",      // Apple Silicon Homebrew
             "/usr/local/bin/ffmpeg",          // Intel Homebrew
@@ -79,11 +88,8 @@ class VideoExporter: ObservableObject {
         // Input
         args += ["-f", "concat", "-safe", "0", "-i", concatFile.path]
         
-        // Video filters
+        // Video filters (only scaling, no fps - that conflicts with concat demuxer)
         var filters: [String] = []
-        
-        // Frame rate
-        filters.append("fps=\(settings.frameRate.rawValue)")
         
         // Resolution scaling (if not original)
         if let scaleFilter = settings.resolution.scaleFilter(originalWidth: 1920, originalHeight: 1080) {
@@ -99,17 +105,22 @@ class VideoExporter: ObservableObject {
         case .mp4, .mov:
             if settings.useHardwareEncoding, let hwCodec = settings.format.hardwareCodec {
                 args += ["-c:v", hwCodec]
+                args += ["-allow_sw", "1"]
             } else {
                 args += ["-c:v", "libx264"]
                 args += ["-preset", settings.quality.preset]
                 args += ["-crf", "\(settings.quality.crf)"]
+                args += ["-profile:v", "main"]
+                args += ["-level", "4.0"]
             }
+            // Explicit output frame rate for timing
+            args += ["-r", "\(settings.frameRate.rawValue)"]
             
         case .webm:
             args += ["-c:v", "libvpx-vp9"]
-            // VP9 quality settings
             let crf = settings.quality.crf
             args += ["-crf", "\(crf)", "-b:v", "0"]
+            args += ["-r", "\(settings.frameRate.rawValue)"]
         }
         
         // Pixel format for compatibility

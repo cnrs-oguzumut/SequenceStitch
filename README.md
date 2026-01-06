@@ -35,13 +35,31 @@
 | **Frame Rate** | 24, 30, 60 fps |
 | **Encoding** | Software (libx264) or Hardware (VideoToolbox) |
 
-## Requirements
+## Two Versions Available
 
-- macOS 14.0 (Sonoma) or later
-- FFmpeg (install via Homebrew)
+### v1 Lite (~2 MB)
+Requires FFmpeg installed via Homebrew. Best for developers and users who already have FFmpeg.
 
 ```bash
+# Install FFmpeg first
 brew install ffmpeg
+
+# Build v1
+./build-v1-lite.sh
+```
+
+### v2 Bundled (~80 MB)
+Includes FFmpeg - no external dependencies. Best for distribution to end users.
+
+```bash
+# Prepare FFmpeg (one-time setup)
+mkdir -p Resources
+curl -L "https://evermeet.cx/ffmpeg/getrelease/ffmpeg/7z" -o ffmpeg.7z
+7z x ffmpeg.7z -oResources/ -y
+rm ffmpeg.7z
+
+# Build v2
+./build-v2-bundled.sh
 ```
 
 ## Installation
@@ -51,7 +69,12 @@ brew install ffmpeg
 ```bash
 git clone https://github.com/cnrs-oguzumut/SequenceStitch.git
 cd SequenceStitch
-./build.sh
+
+# Choose your version:
+./build-v1-lite.sh      # Requires Homebrew FFmpeg
+# OR
+./build-v2-bundled.sh   # Self-contained (see setup above)
+
 open build/SequenceStitch.app
 ```
 
@@ -75,15 +98,19 @@ open build/SequenceStitch.app
 
 - **SwiftUI** - Native macOS interface
 - **PDFKit** - PDF rendering to PNG
-- **FFmpeg** - Video encoding with hardware acceleration
+- **FFmpeg** - Video encoding
 
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
 
-### Third-Party
+### FFmpeg Attribution
 
-This app uses [FFmpeg](https://ffmpeg.org/) for video encoding, licensed under LGPL 2.1.
+This app uses [FFmpeg](https://ffmpeg.org/) for video encoding.
+
+- FFmpeg is licensed under LGPL 2.1 / GPL
+- Static builds from [evermeet.cx](https://evermeet.cx/ffmpeg/)
+- See [FFMPEG_LICENSE.md](FFMPEG_LICENSE.md) for full details
 
 ---
 
