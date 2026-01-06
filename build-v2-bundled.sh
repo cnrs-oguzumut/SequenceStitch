@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# Build script for SequenceStitch v2 (Bundled) - includes FFmpeg
+# Build script for SequenceStitchBundled v2 - includes FFmpeg (LGPL)
 
 set -e
 
-APP_NAME="SequenceStitch"
+APP_NAME="SequenceStitchBundled"
+EXECUTABLE_NAME="SequenceStitch"
 VERSION="2.0.0"
 BUILD_DIR="build"
 APP_BUNDLE="$BUILD_DIR/$APP_NAME.app"
@@ -38,13 +39,18 @@ mkdir -p "$BUILD_DIR"
 mkdir -p "$MACOS"
 mkdir -p "$RESOURCES"
 
-# Copy executable from Swift build output
-cp ".build/release/$APP_NAME" "$MACOS/$APP_NAME"
+# Copy executable from Swift build output (rename to app name)
+cp ".build/release/$EXECUTABLE_NAME" "$MACOS/$APP_NAME"
 
 # Copy bundled FFmpeg
 echo "Bundling FFmpeg..."
 cp "Resources/ffmpeg" "$RESOURCES/ffmpeg"
 chmod +x "$RESOURCES/ffmpeg"
+
+# Copy LGPL license for FFmpeg
+if [ -f "FFMPEG_LICENSE.md" ]; then
+    cp "FFMPEG_LICENSE.md" "$RESOURCES/FFMPEG_LICENSE.md"
+fi
 echo "✓ FFmpeg bundled"
 
 # Create Info.plist
@@ -56,11 +62,11 @@ cat > "$CONTENTS/Info.plist" << EOF
     <key>CFBundleExecutable</key>
     <string>$APP_NAME</string>
     <key>CFBundleIdentifier</key>
-    <string>com.sequencestitch.app</string>
+    <string>com.sequencestitch.bundled</string>
     <key>CFBundleName</key>
     <string>$APP_NAME</string>
     <key>CFBundleDisplayName</key>
-    <string>$APP_NAME</string>
+    <string>SequenceStitch Bundled</string>
     <key>CFBundleVersion</key>
     <string>$VERSION</string>
     <key>CFBundleShortVersionString</key>

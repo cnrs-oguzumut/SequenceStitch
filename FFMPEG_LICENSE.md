@@ -1,32 +1,44 @@
 # FFmpeg License Notice
 
-SequenceStitch uses FFmpeg for video encoding.
+**IMPORTANT: This bundled version includes FFmpeg which is licensed under LGPL 2.1.**
+
+## Your Rights
+
+You are free to:
+- Use this software for any purpose
+- Modify this software
+- Distribute copies of this software
+
+## Your Obligations (LGPL Compliance)
+
+If you distribute SequenceStitchBundled, you must:
+
+1. **Include this license notice** with the distribution
+2. **Provide FFmpeg source code** upon request (or link to it)
+3. **Allow users to replace the bundled FFmpeg** with their own version
+4. **Not restrict users' rights** under the LGPL
+
+## FFmpeg Source Code
+
+The bundled FFmpeg is version 8.0.1 from [evermeet.cx](https://evermeet.cx/ffmpeg/).
+
+FFmpeg source code is available at:
+- https://ffmpeg.org/download.html
+- https://github.com/FFmpeg/FFmpeg
 
 ## FFmpeg License
 
-FFmpeg is licensed under the GNU Lesser General Public License (LGPL) version 2.1 or later. Some optional components are licensed under the GNU General Public License (GPL) version 2 or later.
+FFmpeg is licensed under:
+- **LGPL 2.1** (core libraries)
+- **GPL 2.0** (some optional components)
 
-For full license details, see:
-- https://ffmpeg.org/legal.html
-- https://www.gnu.org/licenses/lgpl-2.1.html
+Full license text: https://ffmpeg.org/legal.html
 
-## Static Build Attribution
+## SequenceStitch License
 
-The bundled FFmpeg static build (v2) is provided by:
-- **evermeet.cx** - https://evermeet.cx/ffmpeg/
+The SequenceStitch application code (excluding FFmpeg) is licensed under the MIT License.
+See LICENSE file for details.
 
-## Your Obligations
+---
 
-If you distribute SequenceStitch with the bundled FFmpeg (v2), you must:
-1. Include this license notice
-2. Provide access to the FFmpeg source code upon request
-3. Not claim FFmpeg as your own work
-
-## Building Without Bundled FFmpeg
-
-For the v1 (lite) version, users install FFmpeg themselves:
-```bash
-brew install ffmpeg
-```
-
-This approach means you are not distributing FFmpeg, avoiding LGPL distribution requirements.
+**If you prefer to avoid LGPL obligations, use SequenceStitch v1 (Lite) which requires users to install FFmpeg themselves.**
