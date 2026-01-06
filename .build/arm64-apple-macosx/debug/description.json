@@ -1,0 +1,417 @@
+{
+  "builtTestProducts" : [
+
+  ],
+  "copyCommands" : {
+
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.SequenceStitch-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/sources",
+      "importPath" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/Models/SequenceItem.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/SequenceStitchApp.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/Services/PDFProcessor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/Services/VideoExporter.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/Views/AboutView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/Views/ContentView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/Views/ImageGridView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/Views/SidebarView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/Views/ThumbnailView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/sources"
+        }
+      ],
+      "isLibrary" : false,
+      "moduleName" : "SequenceStitch",
+      "moduleOutputPath" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/Modules/SequenceStitch.swiftmodule",
+      "objects" : [
+        "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/SequenceItem.swift.o",
+        "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/SequenceStitchApp.swift.o",
+        "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/PDFProcessor.swift.o",
+        "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/VideoExporter.swift.o",
+        "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/AboutView.swift.o",
+        "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/ContentView.swift.o",
+        "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/ImageGridView.swift.o",
+        "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/SidebarView.swift.o",
+        "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/ThumbnailView.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx14.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j10",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-Xfrontend",
+        "-entry-point-function-name",
+        "-Xfrontend",
+        "SequenceStitch_main",
+        "-color-diagnostics",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "sequencestitch"
+      ],
+      "outputFileMapPath" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/SequenceItem.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/SequenceStitchApp.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/PDFProcessor.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/VideoExporter.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/AboutView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/ContentView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/ImageGridView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/SidebarView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/ThumbnailView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/Modules/SequenceStitch.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/usalman/video_project/SequenceStitch/Sources/Models/SequenceItem.swift",
+        "/Users/usalman/video_project/SequenceStitch/Sources/SequenceStitchApp.swift",
+        "/Users/usalman/video_project/SequenceStitch/Sources/Services/PDFProcessor.swift",
+        "/Users/usalman/video_project/SequenceStitch/Sources/Services/VideoExporter.swift",
+        "/Users/usalman/video_project/SequenceStitch/Sources/Views/AboutView.swift",
+        "/Users/usalman/video_project/SequenceStitch/Sources/Views/ContentView.swift",
+        "/Users/usalman/video_project/SequenceStitch/Sources/Views/ImageGridView.swift",
+        "/Users/usalman/video_project/SequenceStitch/Sources/Views/SidebarView.swift",
+        "/Users/usalman/video_project/SequenceStitch/Sources/Views/ThumbnailView.swift"
+      ],
+      "tempsPath" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "SequenceStitch" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "SequenceStitch",
+      "-package-name",
+      "sequencestitch",
+      "-c",
+      "/Users/usalman/video_project/SequenceStitch/Sources/Models/SequenceItem.swift",
+      "/Users/usalman/video_project/SequenceStitch/Sources/SequenceStitchApp.swift",
+      "/Users/usalman/video_project/SequenceStitch/Sources/Services/PDFProcessor.swift",
+      "/Users/usalman/video_project/SequenceStitch/Sources/Services/VideoExporter.swift",
+      "/Users/usalman/video_project/SequenceStitch/Sources/Views/AboutView.swift",
+      "/Users/usalman/video_project/SequenceStitch/Sources/Views/ContentView.swift",
+      "/Users/usalman/video_project/SequenceStitch/Sources/Views/ImageGridView.swift",
+      "/Users/usalman/video_project/SequenceStitch/Sources/Views/SidebarView.swift",
+      "/Users/usalman/video_project/SequenceStitch/Sources/Views/ThumbnailView.swift",
+      "-I",
+      "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx14.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j10",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-Xfrontend",
+      "-entry-point-function-name",
+      "-Xfrontend",
+      "SequenceStitch_main",
+      "-color-diagnostics",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "sequencestitch",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "SequenceStitch" : [
+
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch-entitlement.plist" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<entitlement-plist>"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<com.apple.security.get-task-allow>"
+        }
+      ],
+      "outputFilePath" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch-entitlement.plist"
+    },
+    "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/Models/SequenceItem.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/SequenceStitchApp.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/Services/PDFProcessor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/Services/VideoExporter.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/Views/AboutView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/Views/ContentView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/Views/ImageGridView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/Views/SidebarView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/Sources/Views/ThumbnailView.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/sources"
+    },
+    "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/AboutView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/ContentView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/ImageGridView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/PDFProcessor.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/SequenceItem.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/SequenceStitchApp.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/SidebarView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/ThumbnailView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.build/VideoExporter.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/SequenceStitch.product/Objects.LinkFileList"
+    },
+    "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/usalman/video_project/SequenceStitch/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}
