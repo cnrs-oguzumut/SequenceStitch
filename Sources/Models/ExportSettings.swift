@@ -104,6 +104,15 @@ enum FrameRateOption: Int, CaseIterable, Identifiable {
     }
 }
 
+/// Video stacking mode for comparison
+enum StackingMode: String, CaseIterable, Identifiable {
+    case none = "None (Single)"
+    case horizontal = "Side-by-Side"
+    case vertical = "Top-Bottom"
+
+    var id: String { rawValue }
+}
+
 /// Complete export settings
 struct ExportSettings {
     var format: OutputFormat = .mp4
@@ -111,4 +120,5 @@ struct ExportSettings {
     var quality: QualityPreset = .high
     var frameRate: FrameRateOption = .fps30
     var useHardwareEncoding: Bool = false
+    var stackingMode: StackingMode = .none
 }

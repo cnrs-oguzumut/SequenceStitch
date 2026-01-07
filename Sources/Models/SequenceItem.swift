@@ -38,6 +38,17 @@ struct SequenceItem: Identifiable, Equatable {
 @MainActor
 class SequenceManager: ObservableObject {
     @Published var items: [SequenceItem] = []
+    @Published var secondaryItems: [SequenceItem] = []  // For comparison mode
+    @Published var isComparisonMode: Bool = false {
+        didSet {
+            // Auto-set stacking mode
+            if isComparisonMode && exportSettings.stackingMode == .none {
+                exportSettings.stackingMode = .horizontal
+            } else if !isComparisonMode {
+                exportSettings.stackingMode = .none
+            }
+        }
+    }
     @Published var frameDuration: Double = 2.0 // seconds per frame
     @Published var isExporting: Bool = false
     @Published var exportProgress: Double = 0.0
@@ -49,44 +60,70 @@ class SequenceManager: ObservableObject {
         case filename
     }
     
-    func addItem(_ item: SequenceItem) {
-        items.append(item)
-    }
-    
-    func removeItem(at index: Int) {
-        guard index >= 0 && index < items.count else { return }
-        let item = items.remove(at: index)
-        
-        // Clean up temporary files from PDF conversion
-        if item.isFromPDF {
-            try? FileManager.default.removeItem(at: item.processedURL)
+    func addItem(_ item: SequenceItem, toSecondary: Bool = false) {
+        if toSecondary && isComparisonMode {
+            secondaryItems.append(item)
+        } else {
+            items.append(item)
         }
     }
-    
-    func removeItem(withId id: UUID) {
-        if let index = items.firstIndex(where: { $0.id == id }) {
-            removeItem(at: index)
+
+    func removeItem(at index: Int, fromSecondary: Bool = false) {
+        if fromSecondary {
+            guard index >= 0 && index < secondaryItems.count else { return }
+            let item = secondaryItems.remove(at: index)
+            if item.isFromPDF {
+                try? FileManager.default.removeItem(at: item.processedURL)
+            }
+        } else {
+            guard index >= 0 && index < items.count else { return }
+            let item = items.remove(at: index)
+            if item.isFromPDF {
+                try? FileManager.default.removeItem(at: item.processedURL)
+            }
         }
     }
-    
-    func moveItem(from source: IndexSet, to destination: Int) {
-        items.move(fromOffsets: source, toOffset: destination)
+
+    func removeItem(withId id: UUID, fromSecondary: Bool = false) {
+        if fromSecondary {
+            if let index = secondaryItems.firstIndex(where: { $0.id == id }) {
+                removeItem(at: index, fromSecondary: true)
+            }
+        } else {
+            if let index = items.firstIndex(where: { $0.id == id }) {
+                removeItem(at: index, fromSecondary: false)
+            }
+        }
     }
-    
+
+    func moveItem(from source: IndexSet, to destination: Int, inSecondary: Bool = false) {
+        if inSecondary {
+            secondaryItems.move(fromOffsets: source, toOffset: destination)
+        } else {
+            items.move(fromOffsets: source, toOffset: destination)
+        }
+    }
+
     func sort(by option: SortOption) {
         switch option {
         case .dateCreated:
             items.sort { $0.dateCreated < $1.dateCreated }
+            secondaryItems.sort { $0.dateCreated < $1.dateCreated }
         case .filename:
             items.sort { $0.originalFilename.localizedStandardCompare($1.originalFilename) == .orderedAscending }
+            secondaryItems.sort { $0.originalFilename.localizedStandardCompare($1.originalFilename) == .orderedAscending }
         }
     }
-    
+
     func clearAll() {
-        // Clean up any temporary PDF conversions
         for item in items where item.isFromPDF {
             try? FileManager.default.removeItem(at: item.processedURL)
         }
         items.removeAll()
+
+        for item in secondaryItems where item.isFromPDF {
+            try? FileManager.default.removeItem(at: item.processedURL)
+        }
+        secondaryItems.removeAll()
     }
 }

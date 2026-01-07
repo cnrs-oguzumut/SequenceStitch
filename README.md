@@ -24,6 +24,7 @@
 - ⏱️ **Frame Duration** - Adjustable timing per frame (0.1s - 10s)
 - 🎬 **Preview** - Play sequence before exporting
 - 💾 **Save Projects** - Save and reload your work
+- 🔀 **Comparison Mode** - Side-by-side or top-bottom comparison of two sequences
 
 ### Export Options
 
@@ -34,6 +35,7 @@
 | **Quality** | Low, Medium, High, Lossless |
 | **Frame Rate** | 24, 30, 60 fps |
 | **Encoding** | Software (libx264) or Hardware (VideoToolbox) |
+| **Stacking** | None, Side-by-Side, Top-Bottom (Comparison mode) |
 
 ## Two Versions Available
 
@@ -80,11 +82,23 @@ open build/SequenceStitch.app
 
 ## Usage
 
+### Single Sequence Mode
+
 1. **Add Images** - Drag files onto the window or use "Open Folder"
 2. **Arrange** - Drag rows to reorder, or use Sort menu
 3. **Configure** - Set frame duration and export settings
 4. **Preview** - Click play to preview the sequence
 5. **Export** - Click "Export Video" and choose destination
+
+### Comparison Mode
+
+1. **Enable** - Toggle "Comparison Mode" in the toolbar
+2. **Add Sequence A** - Drag images to the left panel (Control/Baseline)
+3. **Add Sequence B** - Drag images to the right panel (Experiment/Treatment)
+4. **Choose Stacking** - Select "Side-by-Side" or "Top-Bottom"
+5. **Export** - Creates a comparison video with both sequences
+
+Perfect for A/B testing, before/after comparisons, or experimental validation!
 
 ## Keyboard Shortcuts
 

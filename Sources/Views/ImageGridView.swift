@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 struct ImageGridView: View {
     @EnvironmentObject var sequenceManager: SequenceManager
     @Binding var draggedItem: SequenceItem?
+    var isSecondary: Bool = false
     @State private var isDropTargeted = false
     @State private var isEditMode = true
     
@@ -14,7 +15,11 @@ struct ImageGridView: View {
     private let supportedTypes: [UTType] = [
         .png, .jpeg, .pdf, .image
     ]
-    
+
+    private var currentItems: [SequenceItem] {
+        isSecondary ? sequenceManager.secondaryItems : sequenceManager.items
+    }
+
     var body: some View {
         ZStack {
             // Background gradient
@@ -28,7 +33,7 @@ struct ImageGridView: View {
             )
             .ignoresSafeArea()
             
-            if sequenceManager.items.isEmpty {
+            if currentItems.isEmpty {
                 emptyStateView
             } else {
                 listView
@@ -110,7 +115,7 @@ struct ImageGridView: View {
     
     private var listView: some View {
         List {
-            ForEach(Array(sequenceManager.items.enumerated()), id: \.element.id) { index, item in
+            ForEach(Array(currentItems.enumerated()), id: \.element.id) { index, item in
                 HStack(spacing: 16) {
                     // Sequence number
                     Text("\(index + 1)")
@@ -154,7 +159,7 @@ struct ImageGridView: View {
                     // Delete button
                     Button {
                         withAnimation {
-                            sequenceManager.removeItem(withId: item.id)
+                            sequenceManager.removeItem(withId: item.id, fromSecondary: isSecondary)
                         }
                     } label: {
                         Image(systemName: "trash")
@@ -165,7 +170,7 @@ struct ImageGridView: View {
                 .padding(.vertical, 8)
             }
             .onMove { source, destination in
-                sequenceManager.items.move(fromOffsets: source, toOffset: destination)
+                sequenceManager.moveItem(from: source, to: destination, inSecondary: isSecondary)
             }
         }
         .listStyle(.inset(alternatesRowBackgrounds: true))
@@ -196,18 +201,20 @@ struct ImageGridView: View {
         let permanentURL = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
             .appendingPathExtension("pdf")
-        
+
+        let toSecondary = isSecondary
+
         do {
             try FileManager.default.copyItem(at: tempURL, to: permanentURL)
-            
+
             let processedURL = try PDFProcessor.renderFirstPage(of: permanentURL, dpi: 300)
-            
+
             guard let thumbnail = PDFProcessor.createThumbnail(from: processedURL) else {
                 return
             }
-            
+
             let dateCreated = PDFProcessor.getCreationDate(of: permanentURL)
-            
+
             let item = SequenceItem(
                 originalURL: permanentURL,
                 processedURL: processedURL,
@@ -216,13 +223,13 @@ struct ImageGridView: View {
                 originalFilename: tempURL.lastPathComponent,
                 isFromPDF: true
             )
-            
+
             Task { @MainActor in
-                sequenceManager.addItem(item)
+                sequenceManager.addItem(item, toSecondary: toSecondary)
             }
-            
+
             try? FileManager.default.removeItem(at: permanentURL)
-            
+
         } catch {
             print("PDF processing error: \(error)")
         }
@@ -233,16 +240,18 @@ struct ImageGridView: View {
         let permanentURL = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
             .appendingPathExtension(ext)
-        
+
+        let toSecondary = isSecondary
+
         do {
             try FileManager.default.copyItem(at: tempURL, to: permanentURL)
-            
+
             guard let thumbnail = PDFProcessor.createThumbnail(from: permanentURL) else {
                 return
             }
-            
+
             let dateCreated = PDFProcessor.getCreationDate(of: permanentURL)
-            
+
             let item = SequenceItem(
                 originalURL: permanentURL,
                 processedURL: permanentURL,
@@ -251,9 +260,9 @@ struct ImageGridView: View {
                 originalFilename: tempURL.lastPathComponent,
                 isFromPDF: false
             )
-            
+
             Task { @MainActor in
-                sequenceManager.addItem(item)
+                sequenceManager.addItem(item, toSecondary: toSecondary)
             }
         } catch {
             print("Image processing error: \(error)")

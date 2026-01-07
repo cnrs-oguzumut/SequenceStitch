@@ -1,6 +1,11 @@
 # Build artifacts
 .build/
 build/
+*.app
+
+# Debug files
+/tmp/ffmpeg_debug.txt
+/tmp/ffmpeg_output.txt
 
 # Bundled FFmpeg binary (too large for Git)
 Resources/ffmpeg

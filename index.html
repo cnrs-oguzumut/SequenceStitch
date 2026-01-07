@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SequenceStitch - Convert Image Sequences to Videos on macOS</title>
+    <meta name="description" content="Professional macOS app for converting image sequences to high-quality videos. Features comparison mode, drag & drop, and flexible export options.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        .logo {
+            width: 128px;
+            height: 128px;
+            margin: 0 auto 20px;
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .tagline {
+            font-size: 1.3em;
+            opacity: 0.95;
+            margin-bottom: 30px;
+        }
+
+        .badges {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 35px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            margin-top: -40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .feature {
+            padding: 30px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            transition: transform 0.3s ease;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .feature h3 {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .feature p {
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .comparison-mode {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px;
+            border-radius: 20px;
+            margin: 50px 0;
+            text-align: center;
+        }
+
+        .comparison-mode h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .comparison-mode p {
+            font-size: 1.2em;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto 30px;
+        }
+
+        .export-options {
+            background: #f8f9fa;
+            padding: 40px;
+            border-radius: 15px;
+            margin: 40px 0;
+        }
+
+        .export-options h2 {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 30px;
+            color: #667eea;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f5f7fa;
+        }
+
+        .versions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .version-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .version-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .version-card h3 {
+            font-size: 1.8em;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .version-size {
+            font-size: 1.2em;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .version-card ul {
+            list-style: none;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .version-card li {
+            padding: 8px 0;
+            color: #555;
+        }
+
+        .version-card li:before {
+            content: "✓ ";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+            margin-top: 40px;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px solid white;
+        }
+
+        footer a:hover {
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .tagline {
+                font-size: 1.1em;
+            }
+
+            .main-content {
+                padding: 40px 20px;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .versions {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-mode {
+                padding: 30px 20px;
+            }
+
+            .comparison-mode h2 {
+                font-size: 1.8em;
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img src="Assets/icon.png" alt="SequenceStitch Logo">
+            </div>
+            <h1>SequenceStitch</h1>
+            <p class="tagline">Convert Image Sequences to High-Quality Videos on macOS</p>
+
+            <div class="badges">
+                <span class="badge">macOS 14+</span>
+                <span class="badge">Swift 5.9</span>
+                <span class="badge">MIT License</span>
+            </div>
+
+            <div class="cta-buttons">
+                <a href="https://github.com/cnrs-oguzumut/SequenceStitch/releases" class="btn btn-primary">Download Now</a>
+                <a href="https://github.com/cnrs-oguzumut/SequenceStitch" class="btn btn-secondary">View on GitHub</a>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <h2 style="text-align: center; font-size: 2.5em; margin-bottom: 20px; color: #667eea;">Features</h2>
+
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🖼️</div>
+                    <h3>Drag & Drop</h3>
+                    <p>Effortlessly import PNG, JPEG, and PDF files with intuitive drag-and-drop support</p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">📂</div>
+                    <h3>Batch Import</h3>
+                    <p>Import entire folders of images at once with automatic sorting options</p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Reorder</h3>
+                    <p>Rearrange your sequence by dragging rows or using smart sort options</p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">⏱️</div>
+                    <h3>Frame Duration</h3>
+                    <p>Precise timing control from 0.1s to 10s per frame</p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">🎬</div>
+                    <h3>Preview</h3>
+                    <p>Play your sequence before exporting with keyboard controls</p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">💾</div>
+                    <h3>Save Projects</h3>
+                    <p>Save and reload your work for iterative editing</p>
+                </div>
+            </div>
+
+            <div class="comparison-mode">
+                <h2>🔀 Comparison Mode</h2>
+                <p>Create side-by-side or top-bottom comparison videos perfect for A/B testing, before/after demonstrations, or experimental validation. Simply toggle comparison mode and drag your sequences to separate panels!</p>
+                <a href="#" class="btn btn-primary" style="margin-top: 20px;">Learn More</a>
+            </div>
+
+            <div class="export-options">
+                <h2>Flexible Export Options</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Setting</th>
+                            <th>Options</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Format</strong></td>
+                            <td>MP4, MOV, WebM</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Resolution</strong></td>
+                            <td>Original, 2x, 4x, 720p, 1080p, 4K</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Quality</strong></td>
+                            <td>Low, Medium, High, Lossless</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Frame Rate</strong></td>
+                            <td>24, 30, 60 fps</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Encoding</strong></td>
+                            <td>Software (libx264) or Hardware (VideoToolbox)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Stacking</strong></td>
+                            <td>None, Side-by-Side, Top-Bottom</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 style="text-align: center; font-size: 2.5em; margin: 60px 0 30px; color: #667eea;">Two Versions Available</h2>
+
+            <div class="versions">
+                <div class="version-card">
+                    <h3>v1 Lite</h3>
+                    <div class="version-size">~2 MB</div>
+                    <ul>
+                        <li>Requires FFmpeg via Homebrew</li>
+                        <li>Minimal file size</li>
+                        <li>Best for developers</li>
+                        <li>Fast installation</li>
+                    </ul>
+                    <a href="https://github.com/cnrs-oguzumut/SequenceStitch/releases" class="btn btn-primary" style="margin-top: 20px;">Download</a>
+                </div>
+
+                <div class="version-card">
+                    <h3>v2 Bundled</h3>
+                    <div class="version-size">~80 MB</div>
+                    <ul>
+                        <li>No external dependencies</li>
+                        <li>FFmpeg included</li>
+                        <li>Best for end users</li>
+                        <li>Ready to use</li>
+                    </ul>
+                    <a href="https://github.com/cnrs-oguzumut/SequenceStitch/releases" class="btn btn-primary" style="margin-top: 20px;">Download</a>
+                </div>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 40px; border-radius: 15px; margin: 40px 0;">
+                <h2 style="text-align: center; font-size: 2em; margin-bottom: 30px; color: #667eea;">Getting Started</h2>
+
+                <h3 style="color: #667eea; margin: 30px 0 15px;">Single Sequence Mode</h3>
+                <ol style="line-height: 2; color: #555;">
+                    <li><strong>Add Images</strong> - Drag files onto the window or use "Open Folder"</li>
+                    <li><strong>Arrange</strong> - Drag rows to reorder, or use Sort menu</li>
+                    <li><strong>Configure</strong> - Set frame duration and export settings</li>
+                    <li><strong>Preview</strong> - Click play to preview the sequence</li>
+                    <li><strong>Export</strong> - Click "Export Video" and choose destination</li>
+                </ol>
+
+                <h3 style="color: #667eea; margin: 30px 0 15px;">Comparison Mode</h3>
+                <ol style="line-height: 2; color: #555;">
+                    <li><strong>Enable</strong> - Toggle "Comparison Mode" in the toolbar</li>
+                    <li><strong>Add Sequence A</strong> - Drag images to the left panel (Control/Baseline)</li>
+                    <li><strong>Add Sequence B</strong> - Drag images to the right panel (Experiment/Treatment)</li>
+                    <li><strong>Choose Stacking</strong> - Select "Side-by-Side" or "Top-Bottom"</li>
+                    <li><strong>Export</strong> - Creates a comparison video with both sequences</li>
+                </ol>
+            </div>
+        </div>
+
+        <footer>
+            <p>Made with ❤️ for the creative community</p>
+            <p style="margin-top: 10px;">
+                <a href="https://github.com/cnrs-oguzumut/SequenceStitch">GitHub</a> •
+                <a href="https://github.com/cnrs-oguzumut/SequenceStitch/issues">Report Issues</a> •
+                <a href="https://github.com/cnrs-oguzumut/SequenceStitch/blob/main/LICENSE">MIT License</a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

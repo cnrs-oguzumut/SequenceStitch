@@ -14,8 +14,52 @@ struct ContentView: View {
             SidebarView(exporter: exporter, showingExportPanel: $showingSavePanel)
                 .frame(minWidth: 280)
         } detail: {
-            ImageGridView(draggedItem: $draggedItem)
-                .frame(minWidth: 600)
+            VStack(spacing: 0) {
+                // Comparison mode toolbar
+                HStack {
+                    Toggle(isOn: $sequenceManager.isComparisonMode) {
+                        Label("Comparison Mode", systemImage: "square.split.2x1")
+                    }
+                    .toggleStyle(.switch)
+
+                    Spacer()
+
+                    if sequenceManager.isComparisonMode {
+                        Picker("Stacking", selection: $sequenceManager.exportSettings.stackingMode) {
+                            ForEach(StackingMode.allCases.filter { $0 != .none }) { mode in
+                                Text(mode.rawValue).tag(mode)
+                            }
+                        }
+                        .frame(width: 150)
+                    }
+                }
+                .padding()
+                .background(Color(nsColor: .controlBackgroundColor))
+
+                // Main content area
+                if sequenceManager.isComparisonMode {
+                    HStack(spacing: 2) {
+                        VStack {
+                            Text("Sequence A (Control)")
+                                .font(.headline)
+                                .padding(.top, 8)
+                            ImageGridView(draggedItem: $draggedItem, isSecondary: false)
+                        }
+
+                        Divider()
+
+                        VStack {
+                            Text("Sequence B (Experiment)")
+                                .font(.headline)
+                                .padding(.top, 8)
+                            ImageGridView(draggedItem: $draggedItem, isSecondary: true)
+                        }
+                    }
+                } else {
+                    ImageGridView(draggedItem: $draggedItem, isSecondary: false)
+                }
+            }
+            .frame(minWidth: 600)
         }
         .navigationSplitViewStyle(.prominentDetail)
         .background(Color(nsColor: .windowBackgroundColor))
@@ -239,6 +283,7 @@ struct ContentView: View {
             do {
                 try await exporter.export(
                     items: sequenceManager.items,
+                    secondaryItems: sequenceManager.secondaryItems,
                     frameDuration: sequenceManager.frameDuration,
                     settings: sequenceManager.exportSettings,
                     outputURL: url
