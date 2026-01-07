@@ -13,7 +13,7 @@ struct ImageGridView: View {
     ]
     
     private let supportedTypes: [UTType] = [
-        .png, .jpeg, .pdf, .image
+        .png, .jpeg, .pdf, .image, .movie, .mpeg4Movie, .quickTimeMovie
     ]
 
     private var currentItems: [SequenceItem] {
@@ -88,17 +88,17 @@ struct ImageGridView: View {
             }
             
             VStack(spacing: 8) {
-                Text("Drop Images Here")
+                Text("Drop Images or Video Here")
                     .font(.title2.weight(.semibold))
                     .foregroundStyle(.primary)
                 
-                Text("PNG, JPEG, or PDF files")
+                Text("PNG, JPEG, PDF, MP4, MOV")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
             
             HStack(spacing: 8) {
-                ForEach(["PNG", "JPEG", "PDF"], id: \.self) { format in
+                ForEach(["Images", "PDF", "Video"], id: \.self) { format in
                     Text(format)
                         .font(.caption.weight(.medium))
                         .padding(.horizontal, 12)
@@ -187,6 +187,13 @@ struct ImageGridView: View {
                     processPDF(at: url)
                 }
             }
+            // Then videos
+            else if provider.hasItemConformingToTypeIdentifier(UTType.movie.identifier) {
+                provider.loadFileRepresentation(forTypeIdentifier: UTType.movie.identifier) { url, error in
+                    guard let url = url else { return }
+                    processVideo(at: url)
+                }
+            }
             // Then images
             else if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
                 provider.loadFileRepresentation(forTypeIdentifier: UTType.image.identifier) { url, error in
@@ -194,6 +201,78 @@ struct ImageGridView: View {
                     processImage(at: url)
                 }
             }
+        }
+    }
+    
+    private func processVideo(at tempURL: URL) {
+        // Create permanent copy of video to extract from
+        // Actually VideoImportService can read from any URL, but loadFileRepresentation gives a temporary URL that might expire?
+        // It's safer to copy if we needed it later, but for extraction we just need it now.
+        // However, loadFileRepresentation docs say the file is deleted when the completion handler returns?
+        // "This file is deleted when the completion handler returns." -> YES.
+        // So we MUST copy it.
+        
+        let ext = tempURL.pathExtension.isEmpty ? "mp4" : tempURL.pathExtension
+        let permanentURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension(ext)
+            
+        let toSecondary = isSecondary
+        
+        do {
+            try FileManager.default.copyItem(at: tempURL, to: permanentURL)
+            
+            // Check file size (limit to 500MB)
+            if let resources = try? permanentURL.resourceValues(forKeys: [.fileSizeKey]),
+               let fileSize = resources.fileSize, fileSize > 500 * 1024 * 1024 {
+                
+                try? FileManager.default.removeItem(at: permanentURL) // Cleanup
+                
+                Task { @MainActor in
+                    sequenceManager.exportError = "Whoa, that's a huge file! 🐘\nPlease use videos under 500MB."
+                }
+                return
+            }
+            
+            Task {
+                do {
+                    // Extract
+                    let frameURLs = try await VideoImportService.extractFrames(from: permanentURL) { _ in }
+                    
+                    // Create items
+                    var newItems: [SequenceItem] = []
+                    let sourceName = permanentURL.lastPathComponent
+                    
+                    for (index, url) in frameURLs.enumerated() {
+                        if let thumbnail = PDFProcessor.createThumbnail(from: url) {
+                            let item = SequenceItem(
+                                originalURL: url,
+                                processedURL: url, // Extracted frames are PNGs
+                                thumbnail: thumbnail,
+                                dateCreated: Date(),
+                                originalFilename: "\(sourceName)_frame_\(String(format: "%04d", index + 1))",
+                                isFromPDF: false
+                            )
+                            newItems.append(item)
+                        }
+                    }
+                    
+                    await MainActor.run {
+                        sequenceManager.addItems(newItems, toSecondary: toSecondary)
+                    }
+                    
+                    // Cleanup video file
+                    try? FileManager.default.removeItem(at: permanentURL)
+                    
+                } catch {
+                    print("Video processing error: \(error)")
+                    await MainActor.run {
+                        sequenceManager.exportError = "Video Drop Failed: \(error.localizedDescription)"
+                    }
+                }
+            }
+        } catch {
+            print("Video copy error: \(error)")
         }
     }
     

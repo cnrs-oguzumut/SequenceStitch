@@ -67,6 +67,14 @@ class SequenceManager: ObservableObject {
             items.append(item)
         }
     }
+    
+    func addItems(_ newItems: [SequenceItem], toSecondary: Bool = false) {
+        if toSecondary && isComparisonMode {
+            secondaryItems.append(contentsOf: newItems)
+        } else {
+            items.append(contentsOf: newItems)
+        }
+    }
 
     func removeItem(at index: Int, fromSecondary: Bool = false) {
         if fromSecondary {
