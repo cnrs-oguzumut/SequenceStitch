@@ -96,7 +96,8 @@ class VideoExporter: ObservableObject {
         ffmpegURL: URL,
         concatFile: URL,
         outputURL: URL,
-        framerate: Double
+        framerate: Double,
+        targetResolution: NormalizationResolution
     ) async throws {
         // Read concat file to get list of images WITHOUT duration lines
         let concatContent = try String(contentsOf: concatFile, encoding: .utf8)
@@ -126,12 +127,25 @@ class VideoExporter: ObservableObject {
 
         let process = Process()
         process.executableURL = ffmpegURL
+
+        // Build video filter based on normalization resolution
+        let videoFilter: String
+        if let dimensions = targetResolution.dimensions {
+            // Normalize to specific resolution with letterboxing
+            let width = dimensions.width
+            let height = dimensions.height
+            videoFilter = "scale=\(width):\(height):force_original_aspect_ratio=decrease,pad=\(width):\(height):(ow-iw)/2:(oh-ih)/2:black,setsar=1"
+        } else {
+            // Original mode: just ensure even dimensions (safety filter)
+            videoFilter = "scale=trunc(iw/2)*2:trunc(ih/2)*2,setsar=1"
+        }
+
         process.arguments = [
             "-r", "\(framerate)",
             "-f", "concat",
             "-safe", "0",
             "-i", simpleConcatFile.path,
-            "-vf", "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black,setsar=1",
+            "-vf", videoFilter,
             "-c:v", "libx264",
             "-preset", "ultrafast",
             "-crf", "18",
@@ -183,9 +197,47 @@ class VideoExporter: ObservableObject {
             }
 
             if secondaryConcatFile != nil, settings.stackingMode != .none {
-                // Simple stacking of normalized videos
-                let stackFilter = settings.stackingMode == .horizontal ? "hstack=inputs=2" : "vstack=inputs=2"
-                args += ["-filter_complex", "[0:v][1:v]\(stackFilter)[stacked]", "-map", "[stacked]"]
+                // Simple stacking of normalized videos with optional spacing
+                let spacing = settings.stackingSpacing
+                print("DEBUG: Spacing value = \(spacing)")
+                try? "DEBUG: Spacing value = \(spacing)\n".write(toFile: "/tmp/spacing_debug.txt", atomically: true, encoding: .utf8)
+                let stackFilter: String
+
+                if spacing > 0 {
+                    print("DEBUG: Using positive spacing filter")
+                    try? "DEBUG: Using positive spacing filter\n".write(toFile: "/tmp/spacing_debug.txt", atomically: false, encoding: .utf8)
+                    // Add padding to create spacing between videos
+                    // pad filter syntax: pad=width:height:x:y:color
+                    if settings.stackingMode == .horizontal {
+                        // For horizontal: add padding to right of first video, left of second
+                        let halfSpacing = spacing / 2
+                        stackFilter = "[0:v]pad=iw+\(halfSpacing):ih:0:0:black[left];[1:v]pad=iw+\(halfSpacing):ih:\(halfSpacing):0:black[right];[left][right]hstack=inputs=2"
+                    } else {
+                        // For vertical: add padding to bottom of first video, top of second
+                        let halfSpacing = spacing / 2
+                        stackFilter = "[0:v]pad=iw:ih+\(halfSpacing):0:0:black[top];[1:v]pad=iw:ih+\(halfSpacing):0:\(halfSpacing):black[bottom];[top][bottom]vstack=inputs=2"
+                    }
+                } else if spacing < 0 {
+                    print("DEBUG: Using negative spacing (overlap) filter")
+                    try? "DEBUG: Using negative spacing (overlap) filter\n".write(toFile: "/tmp/spacing_debug.txt", atomically: false, encoding: .utf8)
+                    // Use overlay filter for negative spacing (overlap)
+                    let overlap = abs(spacing)
+                    if settings.stackingMode == .horizontal {
+                        // Overlay second video on first, offset by (width - overlap)
+                        stackFilter = "[0:v][1:v]overlay=W-\(overlap):0"
+                    } else {
+                        // Overlay second video on first, offset by (height - overlap)
+                        stackFilter = "[0:v][1:v]overlay=0:H-\(overlap)"
+                    }
+                } else {
+                    // No spacing
+                    print("DEBUG: Using no spacing filter")
+                    stackFilter = settings.stackingMode == .horizontal ? "[0:v][1:v]hstack=inputs=2" : "[0:v][1:v]vstack=inputs=2"
+                }
+
+                print("DEBUG: Final filter = \(stackFilter)")
+
+                args += ["-filter_complex", "\(stackFilter)[stacked]", "-map", "[stacked]"]
             }
         } else {
             // Original concat file approach for single sequence mode
@@ -307,7 +359,8 @@ class VideoExporter: ObservableObject {
                 ffmpegURL: ffmpegURL,
                 concatFile: concatFileURL,
                 outputURL: normalizedPrimary,
-                framerate: actualFramerate
+                framerate: actualFramerate,
+                targetResolution: settings.normalizationResolution
             )
             primaryVideoURL = normalizedPrimary
 
@@ -317,7 +370,8 @@ class VideoExporter: ObservableObject {
                 ffmpegURL: ffmpegURL,
                 concatFile: secConcat,
                 outputURL: normalizedSecondary,
-                framerate: actualFramerate
+                framerate: actualFramerate,
+                targetResolution: settings.normalizationResolution
             )
             secondaryVideoURL = normalizedSecondary
         }

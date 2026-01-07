@@ -31,6 +31,21 @@ struct ContentView: View {
                             }
                         }
                         .frame(width: 150)
+
+                        if sequenceManager.exportSettings.stackingMode != .none {
+                            Text("Spacing:")
+                                .foregroundColor(.secondary)
+
+                            Slider(value: Binding(
+                                get: { Double(sequenceManager.exportSettings.stackingSpacing) },
+                                set: { sequenceManager.exportSettings.stackingSpacing = Int($0) }
+                            ), in: 0...200, step: 1)
+                            .frame(width: 120)
+
+                            Text("\(sequenceManager.exportSettings.stackingSpacing)px")
+                                .frame(width: 40)
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
                 .padding()
@@ -38,21 +53,42 @@ struct ContentView: View {
 
                 // Main content area
                 if sequenceManager.isComparisonMode {
-                    HStack(spacing: 2) {
-                        VStack {
-                            Text("Sequence A (Control)")
-                                .font(.headline)
-                                .padding(.top, 8)
-                            ImageGridView(draggedItem: $draggedItem, isSecondary: false)
+                    VStack(spacing: 0) {
+                        // Preview section
+                        if sequenceManager.exportSettings.stackingMode != .none {
+                            VStack(spacing: 4) {
+                                Text("Stacking Preview")
+                                    .font(.headline)
+                                    .padding(.top, 8)
+
+                                ComparisonPreviewView(exportSettings: sequenceManager.exportSettings)
+                                    .frame(height: 200)
+                                    .background(Color.black)
+                                    .cornerRadius(4)
+                                    .padding(.horizontal, 8)
+                                    .padding(.bottom, 8)
+                                    .id(sequenceManager.exportSettings.previewRefreshTrigger)
+                            }
+                            .background(Color(nsColor: .controlBackgroundColor))
                         }
 
-                        Divider()
+                        // Sequence grids
+                        HStack(spacing: 2) {
+                            VStack {
+                                Text("Sequence A (Control)")
+                                    .font(.headline)
+                                    .padding(.top, 8)
+                                ImageGridView(draggedItem: $draggedItem, isSecondary: false)
+                            }
 
-                        VStack {
-                            Text("Sequence B (Experiment)")
-                                .font(.headline)
-                                .padding(.top, 8)
-                            ImageGridView(draggedItem: $draggedItem, isSecondary: true)
+                            Divider()
+
+                            VStack {
+                                Text("Sequence B (Experiment)")
+                                    .font(.headline)
+                                    .padding(.top, 8)
+                                ImageGridView(draggedItem: $draggedItem, isSecondary: true)
+                            }
                         }
                     }
                 } else {

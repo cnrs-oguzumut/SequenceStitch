@@ -113,12 +113,42 @@ enum StackingMode: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
+/// Normalization resolution for comparison mode
+enum NormalizationResolution: String, CaseIterable, Identifiable {
+    case original = "Original (No Letterbox)"
+    case hd720 = "720p (1280x720)"
+    case hd1080 = "1080p (1920x1080)"
+    case uhd4k = "4K (3840x2160)"
+
+    var id: String { rawValue }
+
+    var dimensions: (width: Int, height: Int)? {
+        switch self {
+        case .original:
+            return nil
+        case .hd720:
+            return (1280, 720)
+        case .hd1080:
+            return (1920, 1080)
+        case .uhd4k:
+            return (3840, 2160)
+        }
+    }
+}
+
 /// Complete export settings
-struct ExportSettings {
-    var format: OutputFormat = .mp4
-    var resolution: ResolutionScale = .original
-    var quality: QualityPreset = .high
-    var frameRate: FrameRateOption = .fps30
-    var useHardwareEncoding: Bool = false
-    var stackingMode: StackingMode = .none
+class ExportSettings: ObservableObject {
+    @Published var format: OutputFormat = .mp4
+    @Published var resolution: ResolutionScale = .original
+    @Published var quality: QualityPreset = .high
+    @Published var frameRate: FrameRateOption = .fps30
+    @Published var useHardwareEncoding: Bool = false
+    @Published var stackingMode: StackingMode = .none
+    @Published var stackingSpacing: Int = 0  // Spacing between stacked sequences in pixels (-200 to 200, negative = overlap)
+    @Published var normalizationResolution: NormalizationResolution = .hd720 {  // Target resolution for comparison mode normalization
+        didSet {
+            previewRefreshTrigger += 1
+        }
+    }
+    @Published var previewRefreshTrigger: Int = 0  // Increments to force preview refresh
 }

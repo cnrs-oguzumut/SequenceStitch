@@ -47,7 +47,39 @@ struct SidebarView: View {
                 
                 Divider()
                     .padding(.horizontal, 16)
-                
+
+                // Comparison Mode Settings (only show when in comparison mode)
+                if sequenceManager.isComparisonMode {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Comparison Mode")
+                            .font(.headline)
+
+                        // Normalization Resolution
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("Normalize To")
+                                    .font(.subheadline)
+                                Spacer()
+                            }
+
+                            Picker("", selection: $sequenceManager.exportSettings.normalizationResolution) {
+                                ForEach(NormalizationResolution.allCases) { res in
+                                    Text(res.rawValue).tag(res)
+                                }
+                            }
+                            .pickerStyle(.menu)
+
+                            Text("Controls output aspect ratio")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(20)
+
+                    Divider()
+                        .padding(.horizontal, 16)
+                }
+
                 // Export Settings
                 VStack(alignment: .leading, spacing: 16) {
                     Text("Export Settings")
