@@ -26,29 +26,43 @@ class VideoExporter: ObservableObject {
     private var currentProcess: Process?
     private var isCancelled = false
     
-    /// Finds FFmpeg binary - checks bundled version first, then Homebrew
+    /// Finds FFmpeg binary - checks bundled version first, then Homebrew/System
     private func findFFmpeg() -> URL? {
         // 1. Check for bundled FFmpeg in app Resources
         if let resourcePath = Bundle.main.resourcePath {
             let bundledFFmpeg = URL(fileURLWithPath: resourcePath).appendingPathComponent("ffmpeg")
             if FileManager.default.isExecutableFile(atPath: bundledFFmpeg.path) {
+                print("Found bundled FFmpeg at: \(bundledFFmpeg.path)")
                 return bundledFFmpeg
             }
         }
         
         // 2. Fall back to Homebrew/system paths
-        let possiblePaths = [
-            "/opt/homebrew/bin/ffmpeg",      // Apple Silicon Homebrew
+        var possiblePaths = [
+            "/opt/homebrew/bin/ffmpeg",       // Apple Silicon Homebrew
             "/usr/local/bin/ffmpeg",          // Intel Homebrew
             "/usr/bin/ffmpeg",                // System
+            "/opt/local/bin/ffmpeg"           // MacPorts
         ]
         
-        for path in possiblePaths {
-            if FileManager.default.isExecutableFile(atPath: path) {
+        // Add paths from PATH environment variable
+        if let pathEnv = ProcessInfo.processInfo.environment["PATH"] {
+            let envPaths = pathEnv.components(separatedBy: ":")
+            possiblePaths.append(contentsOf: envPaths.map { $0 + "/ffmpeg" })
+        }
+        
+        // Remove duplicates
+        let uniquePaths = Array(Set(possiblePaths))
+        
+        for path in uniquePaths {
+            let isExecutable = FileManager.default.isExecutableFile(atPath: path)
+            print("Checking FFmpeg at \(path): \(isExecutable)")
+            if isExecutable {
                 return URL(fileURLWithPath: path)
             }
         }
         
+        print("FFmpeg not found in standard locations.")
         return nil
     }
     
@@ -175,7 +189,9 @@ class VideoExporter: ObservableObject {
             }
         } else {
             // Original concat file approach for single sequence mode
-            args += ["-r", "\(framerate)", "-f", "concat", "-safe", "0", "-i", concatFile.path]
+            // Do NOT specify -r here; let the concat file's 'duration' directives control timing.
+            // The output -r will handle frame duplication/dropping to match target FPS.
+            args += ["-f", "concat", "-safe", "0", "-i", concatFile.path]
         }
 
         if !isNormalizedVideo {
@@ -185,6 +201,10 @@ class VideoExporter: ObservableObject {
             // Resolution scaling (if not original)
             if let scaleFilter = settings.resolution.scaleFilter(originalWidth: 1920, originalHeight: 1080) {
                 filters.append(scaleFilter)
+            } else {
+                // "Original" resolution: Add safety filter to ensure dimensions are divisible by 2
+                // libx264 requires even dimensions; failure to do so results in "Invalid argument" (error -22)
+                filters.append("scale=trunc(iw/2)*2:trunc(ih/2)*2")
             }
 
             if !filters.isEmpty {
@@ -203,7 +223,7 @@ class VideoExporter: ObservableObject {
                 args += ["-preset", settings.quality.preset]
                 args += ["-crf", "\(settings.quality.crf)"]
                 args += ["-profile:v", "main"]
-                args += ["-level", "4.0"]
+                // Removed level constraint to support arbitrary resolutions
             }
             // Explicit output frame rate for timing
             args += ["-r", "\(settings.frameRate.rawValue)"]

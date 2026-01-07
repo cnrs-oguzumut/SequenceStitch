@@ -10,7 +10,7 @@ APP_NAME="SequenceStitchBundled"
 BUILD_DIR="build"
 APP_BUNDLE="$BUILD_DIR/$APP_NAME.app"
 ZIP_PATH="$BUILD_DIR/$APP_NAME.zip"
-ENTITLEMENTS="SequenceStitch.entitlements"
+ENTITLEMENTS="SequenceStitchBundled.entitlements"
 
 # Apple ID Credentials
 APPLE_ID="laletaneri@gmail.com"
@@ -18,7 +18,7 @@ APP_SPECIFIC_PASSWORD="pcfl-wnws-xsch-mmdh"
 TEAM_ID="UM63FN2P72"
 SIGNING_IDENTITY="Developer ID Application" # Standard ID, user might need to adjust
 
-echo "🚀 Starting Notarization Process for $APP_NAME..."
+echo "🚀 Starting Notarization Process for SequenceStitchBundled..."
 
 # 1. Ensure clean build
 echo "Build Phase..."
@@ -76,6 +76,6 @@ xcrun notarytool submit "$ZIP_PATH" \
     --wait
 
 echo ""
-echo "🎉 Notarization submission complete!"
-echo "Check the status output above. If 'Accepted', run:"
-echo "xcrun stapler staple \"$APP_BUNDLE\""
+echo "🎉 Notarization submission complete! Stapling..."
+xcrun stapler staple "$APP_BUNDLE"
+echo "✅ Stapled successfully."

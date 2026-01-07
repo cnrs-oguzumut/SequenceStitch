@@ -22,3 +22,4 @@ xcuserdata/
 # Swift Package Manager
 .swiftpm/
 Package.resolved
+notarize-lite.sh
