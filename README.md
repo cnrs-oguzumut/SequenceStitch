@@ -39,8 +39,10 @@
 
 ## Two Versions Available
 
-### v1 Lite (~2 MB)
+### v1 Lite (~2 MB) - **MIT License Only**
 Requires FFmpeg installed via Homebrew. Best for developers and users who already have FFmpeg.
+
+**License**: MIT (simple, permissive)
 
 ```bash
 # Install FFmpeg first
@@ -50,8 +52,11 @@ brew install ffmpeg
 ./build-v1-lite.sh
 ```
 
-### v2 Bundled (~80 MB)
+### v2 Bundled (~80 MB) - **MIT + LGPL**
 Includes FFmpeg - no external dependencies. Best for distribution to end users.
+
+**License**: MIT (app code) + LGPL 2.1 (bundled FFmpeg)
+⚠️ **LGPL Compliance Required** - See [FFMPEG_LICENSE.md](FFMPEG_LICENSE.md) for details
 
 ```bash
 # Prepare FFmpeg (one-time setup)
@@ -116,15 +121,30 @@ Perfect for A/B testing, before/after comparisons, or experimental validation!
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+### SequenceStitch Application Code
+**MIT License** - see [LICENSE](LICENSE) for details.
 
-### FFmpeg Attribution
+The SequenceStitch application source code is permissively licensed under MIT, allowing free use, modification, and distribution.
 
-This app uses [FFmpeg](https://ffmpeg.org/) for video encoding.
+### FFmpeg (Bundled in v2 Only)
 
-- FFmpeg is licensed under LGPL 2.1 / GPL
+⚠️ **The v2 Bundled version includes FFmpeg which is licensed under LGPL 2.1**
+
+This means:
+- **v1 Lite**: MIT license only (no LGPL obligations)
+- **v2 Bundled**: MIT (app) + LGPL 2.1 (FFmpeg binary)
+
+If you distribute the v2 Bundled version, you **must comply with LGPL 2.1**:
+- Provide FFmpeg source code or written offer
+- Allow users to replace the FFmpeg binary
+- Include license notices
+
+**See [FFMPEG_LICENSE.md](FFMPEG_LICENSE.md) for complete LGPL compliance requirements.**
+
+FFmpeg source code and license information:
+- https://ffmpeg.org/
+- https://github.com/FFmpeg/FFmpeg
 - Static builds from [evermeet.cx](https://evermeet.cx/ffmpeg/)
-- See [FFMPEG_LICENSE.md](FFMPEG_LICENSE.md) for full details
 
 ---
 
