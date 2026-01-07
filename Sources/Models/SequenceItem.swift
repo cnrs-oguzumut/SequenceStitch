@@ -55,6 +55,11 @@ class SequenceManager: ObservableObject {
     @Published var exportError: String?
     @Published var exportSettings = ExportSettings()
     
+    // Import State
+    @Published var isImportingVideo: Bool = false
+    @Published var importProgress: Double = 0.0
+    @Published var importTask: Task<Void, Never>?
+    
     enum SortOption {
         case dateCreated
         case filename

@@ -1,7 +1,20 @@
 import Foundation
+import AVFoundation
 
 /// Service for importing video frames using FFmpeg
 class VideoImportService {
+    
+    /// Helper to get video duration in seconds
+    private static func getVideoDuration(from url: URL) async -> Double? {
+        let asset = AVURLAsset(url: url)
+        do {
+            let duration = try await asset.load(.duration)
+            return duration.seconds
+        } catch {
+            print("Failed to get duration: \(error)")
+            return nil
+        }
+    }
     
     enum ImportError: LocalizedError {
         case ffmpegNotFound
@@ -68,6 +81,9 @@ class VideoImportService {
             throw ImportError.ffmpegNotFound
         }
         
+        // Get duration for progress calculation
+        let totalDuration = await getVideoDuration(from: videoURL) ?? 0
+        
         // Create a unique temp directory for this extraction
         let tempDir = FileManager.default.temporaryDirectory
             .appendingPathComponent("Import_\(UUID().uuidString)")
@@ -90,6 +106,8 @@ class VideoImportService {
             "-i", videoURL.path,
             "-vf", filterChain,
             "-vsync", "0",
+            "-progress", "pipe:2", // Output progress info to stderr
+            "-nostats", // Reduce noise
             outputPattern
         ]
         
@@ -97,28 +115,52 @@ class VideoImportService {
         let pipe = Pipe()
         process.standardError = pipe
         
+        // Accumulate output for error reporting
+        var fullOutput = ""
+        
+        pipe.fileHandleForReading.readabilityHandler = { handle in
+            let data = handle.availableData
+            guard !data.isEmpty, let output = String(data: data, encoding: .utf8) else { return }
+            
+            fullOutput += output
+            
+            if totalDuration > 0 {
+                // Look for time=HH:MM:SS.ss (standard FFmpeg progress format)
+                let pattern = "time=(\\d{2}):(\\d{2}):(\\d{2}\\.\\d+)"
+                if let regex = try? NSRegularExpression(pattern: pattern),
+                   let match = regex.firstMatch(in: output, range: NSRange(output.startIndex..., in: output)) {
+                    
+                    let nsString = output as NSString
+                    let h = Double(nsString.substring(with: match.range(at: 1))) ?? 0
+                    let m = Double(nsString.substring(with: match.range(at: 2))) ?? 0
+                    let s = Double(nsString.substring(with: match.range(at: 3))) ?? 0
+                    
+                    let currentSeconds = (h * 3600) + (m * 60) + s
+                    let progress = min(max(currentSeconds / totalDuration, 0.0), 1.0)
+                    
+                    progressHandler(progress)
+                }
+            }
+        }
+        
         try await withTaskCancellationHandler {
             try process.run()
             process.waitUntilExit()
+            // Cleanup handler
+            pipe.fileHandleForReading.readabilityHandler = nil
         } onCancel: {
             process.terminate()
+            pipe.fileHandleForReading.readabilityHandler = nil
         }
         
         if process.terminationStatus != 0 {
-            let errorData = pipe.fileHandleForReading.readDataToEndOfFile()
-            let fullOutput = String(data: errorData, encoding: .utf8) ?? ""
-            
             // Parse the output to find the actual error message
-            // Look for lines starting with "Error" or containing "Invalid"
             let lines = fullOutput.components(separatedBy: .newlines)
             let errorLines = lines.filter { line in
                 line.contains("Error") || line.contains("Invalid") || line.contains("failed")
             }
             
-            // Take the last relevant error line, or the last line if nothing specific found
             let cleanMessage = errorLines.last ?? lines.last ?? "Unknown FFmpeg error"
-            
-            // Remove the file path to make it cleaner if present
             let userMessage = cleanMessage.replacingOccurrences(of: videoURL.path, with: "video file")
             
             throw ImportError.extractionFailed(userMessage)

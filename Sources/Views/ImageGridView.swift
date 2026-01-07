@@ -212,7 +212,15 @@ struct ImageGridView: View {
         // "This file is deleted when the completion handler returns." -> YES.
         // So we MUST copy it.
         
-        let ext = tempURL.pathExtension.isEmpty ? "mp4" : tempURL.pathExtension
+        let ext = tempURL.pathExtension.lowercased()
+        
+        // Strict Validation: Silent ignore for unsupported containers (like MKV)
+        // Only accept MP4, MOV, M4V
+        let supportedVideoExtensions = ["mp4", "mov", "m4v"]
+        guard supportedVideoExtensions.contains(ext) else {
+            return // Do nothing, just like dropping a python file
+        }
+        
         let permanentURL = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
             .appendingPathExtension(ext)
@@ -234,43 +242,74 @@ struct ImageGridView: View {
                 return
             }
             
-            Task {
-                do {
-                    // Extract
-                    let frameURLs = try await VideoImportService.extractFrames(from: permanentURL) { _ in }
-                    
-                    // Create items
-                    var newItems: [SequenceItem] = []
-                    let sourceName = permanentURL.lastPathComponent
-                    
-                    for (index, url) in frameURLs.enumerated() {
-                        if let thumbnail = PDFProcessor.createThumbnail(from: url) {
-                            let item = SequenceItem(
-                                originalURL: url,
-                                processedURL: url, // Extracted frames are PNGs
-                                thumbnail: thumbnail,
-                                dateCreated: Date(),
-                                originalFilename: "\(sourceName)_frame_\(String(format: "%04d", index + 1))",
-                                isFromPDF: false
-                            )
-                            newItems.append(item)
+            // Trigger import UI state
+            // Trigger import UI state and start task on MainActor
+            Task { @MainActor in
+                sequenceManager.isImportingVideo = true
+                sequenceManager.importProgress = 0
+                
+                sequenceManager.importTask = Task {
+                    do {
+                        // 1. Extract Frames (Background Process)
+                        // This task now inherits MainActor, but extractFrames uses Process so it doesn't block.
+                        
+                        let frameURLs = try await VideoImportService.extractFrames(from: permanentURL) { progress in
+                            // Scaling extraction to 0.0 - 0.5 of total progress
+                            Task { @MainActor in
+                                self.sequenceManager.importProgress = progress * 0.5
+                            }
                         }
-                    }
-                    
-                    await MainActor.run {
-                        sequenceManager.addItems(newItems, toSecondary: toSecondary)
-                    }
-                    
-                    // Cleanup video file
-                    try? FileManager.default.removeItem(at: permanentURL)
-                    
-                } catch {
-                    print("Video processing error: \(error)")
-                    await MainActor.run {
-                        sequenceManager.exportError = "Video Drop Failed: \(error.localizedDescription)"
+                        
+                        // 2. Process Frames (Thumbnail Gen) - HEAVY WORK
+                        // Run explicitly in background to avoid Main Actor blocking (Spinning Wheel)
+                        let items = await Task.detached(priority: .userInitiated) { () -> [SequenceItem] in
+                            var newItems: [SequenceItem] = []
+                            let sourceName = permanentURL.lastPathComponent
+                            let totalFrames = Double(frameURLs.count)
+                            
+                            for (index, url) in frameURLs.enumerated() {
+                                // Helper to generate thumbnail (Processor is likely thread safe if standard PDFKit/CG)
+                                if let thumbnail = PDFProcessor.createThumbnail(from: url) {
+                                    let item = SequenceItem(
+                                        originalURL: url,
+                                        processedURL: url,
+                                        thumbnail: thumbnail,
+                                        dateCreated: Date(),
+                                        originalFilename: "\(sourceName)_frame_\(String(format: "%04d", index + 1))",
+                                        isFromPDF: false
+                                    )
+                                    newItems.append(item)
+                                }
+                                
+                                // Update progress periodically (e.g. every 10 frames)
+                                if index % 10 == 0 {
+                                    // We can't easily capture 'sequenceManager' here safely if it's MainActor isolated
+                                    // So we skip granular progress updates for now to avoid complexity/crashes
+                                }
+                            }
+                            return newItems
+                        }.value
+                        
+                        // Update Progress to 100% just before showing
+                        // We are already on MainActor in this outer Task (inherited), but explicit check doesn't hurt.
+                        sequenceManager.importProgress = 1.0
+                        sequenceManager.addItems(items, toSecondary: toSecondary)
+                        sequenceManager.isImportingVideo = false
+                        
+                        // Cleanup video file
+                        try? FileManager.default.removeItem(at: permanentURL)
+                        
+                    } catch {
+                        print("Video processing error: \(error)")
+                        if !Task.isCancelled {
+                            sequenceManager.isImportingVideo = false
+                            sequenceManager.exportError = "Import Failed: \(error.localizedDescription)"
+                        }
                     }
                 }
             }
+                    
+
         } catch {
             print("Video copy error: \(error)")
         }

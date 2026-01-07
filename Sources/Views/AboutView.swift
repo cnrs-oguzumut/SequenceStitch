@@ -41,18 +41,22 @@ struct AboutView: View {
             
             // Credits
             VStack(alignment: .leading, spacing: 12) {
-                Text("Open Source Acknowledgment")
+                Text("License Information")
                     .font(.headline)
                 
                 Text("""
-                    This application uses FFmpeg, a complete, cross-platform solution to record, convert and stream audio and video.
+                    This application bundles FFmpeg, which is licensed under the GNU General Public License (GPL) version 2.
                     
-                    FFmpeg is licensed under the GNU Lesser General Public License (LGPL) version 2.1 or later.
+                    Consequently, this combined work is distributed under the GPL v2 license.
+                    You have the right to access the source code of this application and modify it.
                     """)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 
-                Link("https://ffmpeg.org/legal.html", destination: URL(string: "https://ffmpeg.org/legal.html")!)
+                Link("View GPL v2 License", destination: URL(string: "https://www.gnu.org/licenses/old-licenses/gpl-2.0.html")!)
+                    .font(.caption)
+                
+                Link("FFmpeg Source Code", destination: URL(string: "https://ffmpeg.org/download.html")!)
                     .font(.caption)
             }
             .padding()

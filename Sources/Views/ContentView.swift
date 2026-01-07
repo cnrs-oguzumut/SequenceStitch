@@ -8,14 +8,13 @@ struct ContentView: View {
     @State private var showingPreview = false
     @State private var draggedItem: SequenceItem?
     @State private var isImportingFolder = false
-    @State private var isImportingVideo = false
-    @State private var importTask: Task<Void, Never>?
     
     var body: some View {
         NavigationSplitView {
             SidebarView(exporter: exporter, showingExportPanel: $showingSavePanel)
                 .frame(minWidth: 280)
         } detail: {
+
             VStack(spacing: 0) {
                 // Comparison mode toolbar
                 HStack {
@@ -204,7 +203,7 @@ struct ContentView: View {
             PreviewView()
                 .environmentObject(sequenceManager)
         }
-        .alert("Export Error", isPresented: .init(
+        .alert("Notice", isPresented: .init(
             get: { sequenceManager.exportError != nil },
             set: { if !$0 { sequenceManager.exportError = nil } }
         )) {
@@ -213,19 +212,21 @@ struct ContentView: View {
             Text(sequenceManager.exportError ?? "Unknown error")
         }
         .overlay {
-            if isImportingVideo {
+            if sequenceManager.isImportingVideo {
                 ZStack {
                     Color.black.opacity(0.4)
                     VStack(spacing: 16) {
-                        ProgressView()
-                            .controlSize(.large)
-                        Text("Extracting frames from video...")
+                        ProgressView(value: sequenceManager.importProgress)
+                            .progressViewStyle(.linear)
+                            .frame(width: 200)
+                        
+                        Text("Extracting frames... \(Int(sequenceManager.importProgress * 100))%")
                             .font(.headline)
                             .foregroundColor(.white)
                         
                         Button {
-                            importTask?.cancel()
-                            isImportingVideo = false
+                            sequenceManager.importTask?.cancel()
+                            sequenceManager.isImportingVideo = false
                         } label: {
                             Text("Stop Import")
                                 .foregroundColor(.white)
@@ -354,25 +355,25 @@ struct ContentView: View {
         panel.begin { response in
             guard response == .OK, let url = panel.url else { return }
             
-            isImportingVideo = true
-            
-            isImportingVideo = true
+            sequenceManager.isImportingVideo = true
+            sequenceManager.importProgress = 0
             
             // Check file size (limit to 500MB)
             if let resources = try? url.resourceValues(forKeys: [.fileSizeKey]),
                let fileSize = resources.fileSize, fileSize > 500 * 1024 * 1024 {
                 
                 sequenceManager.exportError = "Video is too large (>500MB). Please use a shorter clip."
-                isImportingVideo = false
+                sequenceManager.isImportingVideo = false
                 return
             }
             
-            importTask = Task {
+            sequenceManager.importTask = Task {
                 do {
                     // Extract frames
                     let frameURLs = try await VideoImportService.extractFrames(from: url) { progress in
-                        // Optional: update granular progress if we add a progress bar later
-                        print("Extraction progress: \(progress)")
+                        Task { @MainActor in
+                            self.sequenceManager.importProgress = progress
+                        }
                     }
                     
                     if frameURLs.isEmpty {
@@ -382,13 +383,13 @@ struct ContentView: View {
                     await processExtractedFrames(urls: frameURLs, toSecondary: toSecondary, sourceName: url.lastPathComponent)
                     
                     await MainActor.run {
-                        isImportingVideo = false
+                        sequenceManager.isImportingVideo = false
                     }
                     
                 } catch {
                     if !Task.isCancelled {
                         await MainActor.run {
-                            isImportingVideo = false
+                            sequenceManager.isImportingVideo = false
                             sequenceManager.exportError = "Video Import Failed: \(error.localizedDescription)"
                         }
                     }
@@ -398,37 +399,28 @@ struct ContentView: View {
     }
     
     private func processExtractedFrames(urls: [URL], toSecondary: Bool, sourceName: String) async {
-        // Create sequence items in parallel batch helper could be added, but simple loop is fine for now
-        // We'll process locally then batch add to manager
-        
-        var newItems: [SequenceItem] = []
-        
-        // Process in chunks to avoid blocking main thread too long if updating UI, 
-        // but here we are preparing model objects.
-        
-        // Let's limit concurrent thumbnail generation if needed, but PDFProcessor is lightweight for processed images
-        // Actually PDFProcessor uses PDFKit, but createThumbnail handles images too.
-        
-        for (index, url) in urls.enumerated() {
-            // Note: url is a temp file. We should probably keep using it or move it if needed.
-            // Temp dir from extraction is fine until cleanup? 
-            // VideoImportService creates a temp dir. User might want to save project which refs these paths.
-            // These are in temp, so they will persist for the session.
+        // Run heavy processing in background to avoid blocking Main Thread
+        let newItems = await Task.detached(priority: .userInitiated) { () -> [SequenceItem] in
+            var items: [SequenceItem] = []
             
-            if let thumbnail = PDFProcessor.createThumbnail(from: url) {
-                let item = SequenceItem(
-                    originalURL: url,
-                    processedURL: url,
-                    thumbnail: thumbnail,
-                    dateCreated: Date(), // or infer from frame index?
-                    originalFilename: "\(sourceName)_frame_\(String(format: "%04d", index + 1))",
-                    isFromPDF: false
-                )
-                newItems.append(item)
+            for (index, url) in urls.enumerated() {
+                if let thumbnail = PDFProcessor.createThumbnail(from: url) {
+                    let item = SequenceItem(
+                        originalURL: url,
+                        processedURL: url,
+                        thumbnail: thumbnail,
+                        dateCreated: Date(),
+                        originalFilename: "\(sourceName)_frame_\(String(format: "%04d", index + 1))",
+                        isFromPDF: false
+                    )
+                    items.append(item)
+                }
             }
-        }
+            return items
+        }.value
         
         await MainActor.run {
+            sequenceManager.importProgress = 1.0
             sequenceManager.addItems(newItems, toSecondary: toSecondary)
         }
     }

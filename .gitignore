@@ -23,3 +23,5 @@ xcuserdata/
 .swiftpm/
 Package.resolved
 notarize-lite.sh
+*.mp4
+*.mkv

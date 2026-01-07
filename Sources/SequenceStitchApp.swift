@@ -19,7 +19,7 @@ struct SequenceStitchApp: App {
                         .applicationName: "SequenceStitch",
                         .applicationVersion: "1.0.0",
                         .credits: NSAttributedString(
-                            string: "This software uses FFmpeg under the LGPLv2.1.\nhttps://ffmpeg.org/legal.html",
+                            string: "This software uses FFmpeg under the GPL v2 license.\n\nCombined work licensed under GPL v2.\nSource code available at https://ffmpeg.org",
                             attributes: [.font: NSFont.systemFont(ofSize: 11)]
                         )
                     ])
