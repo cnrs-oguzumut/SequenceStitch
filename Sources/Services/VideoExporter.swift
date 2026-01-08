@@ -408,9 +408,13 @@ class VideoExporter: ObservableObject {
             process.terminationHandler = { proc in
                 continuation.resume(returning: proc.terminationStatus)
             }
-            
+
             do {
+                print("Attempting to launch FFmpeg at: \(ffmpegURL.path)")
+                print("FFmpeg executable: \(FileManager.default.isExecutableFile(atPath: ffmpegURL.path))")
+                print("FFmpeg readable: \(FileManager.default.isReadableFile(atPath: ffmpegURL.path))")
                 try process.run()
+                print("FFmpeg process launched successfully with PID: \(process.processIdentifier)")
                 
                 // Start progress simulation in background
                 Task {
@@ -435,7 +439,13 @@ class VideoExporter: ObservableObject {
                     }
                 }
             } catch {
-                continuation.resume(throwing: ExporterError.exportFailed(error.localizedDescription))
+                print("ERROR: Failed to launch FFmpeg process: \(error)")
+                print("ERROR: Error type: \(type(of: error))")
+                if let nsError = error as NSError? {
+                    print("ERROR: NSError domain: \(nsError.domain), code: \(nsError.code)")
+                    print("ERROR: NSError userInfo: \(nsError.userInfo)")
+                }
+                continuation.resume(throwing: ExporterError.exportFailed("Failed to launch FFmpeg: \(error.localizedDescription)"))
             }
         }
         

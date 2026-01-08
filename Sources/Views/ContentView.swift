@@ -457,7 +457,22 @@ struct ContentView: View {
         sequenceManager.isExporting = true
         sequenceManager.exportProgress = 0
         
+        // Start accessing security-scoped resources (required for sandbox)
+        let outputAccessGranted = url.startAccessingSecurityScopedResource()
+        let parentURL = url.deletingLastPathComponent()
+        let parentAccessGranted = parentURL.startAccessingSecurityScopedResource()
+        
         Task {
+            defer {
+                // Always stop accessing when done
+                if outputAccessGranted {
+                    url.stopAccessingSecurityScopedResource()
+                }
+                if parentAccessGranted {
+                    parentURL.stopAccessingSecurityScopedResource()
+                }
+            }
+            
             do {
                 try await exporter.export(
                     items: sequenceManager.items,
