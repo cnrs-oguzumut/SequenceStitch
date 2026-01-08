@@ -52,18 +52,21 @@ brew install ffmpeg
 ./build-v1-lite.sh
 ```
 
-### v2 Bundled (~80 MB) - **MIT + LGPL**
+### v2 Bundled (~52 MB) - **MIT + LGPL**
 Includes FFmpeg - no external dependencies. Best for distribution to end users.
 
 **License**: MIT (app code) + LGPL 2.1 (bundled FFmpeg)
 ⚠️ **LGPL Compliance Required** - See [FFMPEG_LICENSE.md](FFMPEG_LICENSE.md) for details
 
 ```bash
-# Prepare FFmpeg (one-time setup)
+# Prepare FFmpeg (one-time setup) - Native Apple Silicon arm64
 mkdir -p Resources
-curl -L "https://evermeet.cx/ffmpeg/getrelease/ffmpeg/7z" -o ffmpeg.7z
-7z x ffmpeg.7z -oResources/ -y
-rm ffmpeg.7z
+curl -L "https://www.osxexperts.net/ffmpeg80arm.zip" -o ffmpeg_arm64.zip
+unzip -q ffmpeg_arm64.zip
+mv ffmpeg Resources/ffmpeg
+chmod +x Resources/ffmpeg
+xattr -d com.apple.quarantine Resources/ffmpeg
+rm ffmpeg_arm64.zip
 
 # Build v2
 ./build-v2-bundled.sh
@@ -144,7 +147,8 @@ If you distribute the v2 Bundled version, you **must comply with LGPL 2.1**:
 FFmpeg source code and license information:
 - https://ffmpeg.org/
 - https://github.com/FFmpeg/FFmpeg
-- Static builds from [evermeet.cx](https://evermeet.cx/ffmpeg/)
+- Native arm64 static builds from [OSXExperts.net](https://www.osxexperts.net/)
+- Alternative builds: [evermeet.cx](https://evermeet.cx/ffmpeg/), [Martin-Riedl.de](https://ffmpeg.martin-riedl.de/)
 
 ---
 

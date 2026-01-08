@@ -1,11 +1,21 @@
 # Build artifacts
 .build/
 build/
+dist/
 *.app
+*.pkg
+*.zip
+*.dmg
 
 # Debug files
 /tmp/ffmpeg_debug.txt
 /tmp/ffmpeg_output.txt
+
+# Downloaded binaries and packages
+ffmpeg
+ffmpeg-static.tgz
+ffmpeg_*.zip
+package/
 
 # Bundled FFmpeg binary (too large for Git)
 Resources/ffmpeg
