@@ -8,7 +8,7 @@ set -e
 APP_NAME="SequenceStitch"
 EXECUTABLE_NAME="SequenceStitch"
 VERSION="1.0.0"
-BUILD_NUMBER="1"
+BUILD_NUMBER="2"
 BUNDLE_ID="com.sequencestitch.app"
 BUILD_DIR="dist"
 APP_BUNDLE="$BUILD_DIR/$APP_NAME.app"
@@ -137,10 +137,11 @@ fi
 # Sign the app with App Store entitlements
 echo "🔐 Signing for App Store..."
 
-# First sign the FFmpeg binary WITHOUT sandbox entitlements
-# The bundled binary inherits the app's sandbox, but shouldn't be sandboxed itself
+# First sign the FFmpeg binary with minimal sandbox entitlements
+# Apple requires all executables in sandboxed apps to be sandboxed
 codesign --force --options runtime \
     --sign "$SIGNING_IDENTITY" \
+    --entitlements "FFmpegSandbox.entitlements" \
     "$RESOURCES/ffmpeg"
 
 # Then sign the main app with sandbox entitlements

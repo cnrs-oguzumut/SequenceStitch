@@ -26,6 +26,13 @@
 - 💾 **Save Projects** - Save and reload your work
 - 🔀 **Comparison Mode** - Side-by-side or top-bottom comparison of two sequences
 
+## Interface
+
+<p align="center">
+  <img src="Assets/AppStore_1_2560x1600.png" width="45%" alt="Standard Mode">
+  <img src="Assets/AppStore_2_2560x1600.png" width="45%" alt="Comparison Mode">
+</p>
+
 ### Export Options
 
 | Setting | Options |
