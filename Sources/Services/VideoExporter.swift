@@ -1,4 +1,5 @@
 import Foundation
+import ImageIO
 
 /// Service for exporting image sequences to video using FFmpeg
 class VideoExporter: ObservableObject {
@@ -91,13 +92,27 @@ class VideoExporter: ObservableObject {
         return concatFileURL
     }
     
+    /// Gets image dimensions from a file
+    private func getImageDimensions(_ url: URL?) -> (width: Int, height: Int)? {
+        guard let url = url else { return nil }
+        guard let imageSource = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
+        guard let properties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [String: Any] else { return nil }
+
+        let width = properties[kCGImagePropertyPixelWidth as String] as? Int ?? 0
+        let height = properties[kCGImagePropertyPixelHeight as String] as? Int ?? 0
+
+        return width > 0 && height > 0 ? (width, height) : nil
+    }
+
     /// Normalizes a sequence to fixed dimensions to prevent filter graph reconfiguration
     private func normalizeSequence(
         ffmpegURL: URL,
         concatFile: URL,
         outputURL: URL,
         framerate: Double,
-        targetResolution: NormalizationResolution
+        targetResolution: NormalizationResolution,
+        items: [SequenceItem] = [],
+        secondaryItems: [SequenceItem] = []
     ) async throws {
         // Read concat file to get list of images WITHOUT duration lines
         let concatContent = try String(contentsOf: concatFile, encoding: .utf8)
@@ -136,8 +151,19 @@ class VideoExporter: ObservableObject {
             let height = dimensions.height
             videoFilter = "scale=\(width):\(height):force_original_aspect_ratio=decrease,pad=\(width):\(height):(ow-iw)/2:(oh-ih)/2:black,setsar=1"
         } else {
-            // Original mode: just ensure even dimensions (safety filter)
-            videoFilter = "scale=trunc(iw/2)*2:trunc(ih/2)*2,setsar=1"
+            // Original mode: calculate max dimensions from both sequences
+            let primaryDims = getImageDimensions(items.first?.processedURL) ?? (1920, 1080)
+            let secondaryDims = getImageDimensions(secondaryItems.first?.processedURL) ?? (1920, 1080)
+
+            let maxWidth = max(primaryDims.width, secondaryDims.width)
+            let maxHeight = max(primaryDims.height, secondaryDims.height)
+
+            // Ensure even dimensions
+            let evenWidth = (maxWidth + 1) & ~1
+            let evenHeight = (maxHeight + 1) & ~1
+
+            // Normalize to max dimensions with letterboxing to handle different aspect ratios
+            videoFilter = "scale=\(evenWidth):\(evenHeight):force_original_aspect_ratio=decrease,pad=\(evenWidth):\(evenHeight):(ow-iw)/2:(oh-ih)/2:black,setsar=1"
         }
 
         process.arguments = [
@@ -155,8 +181,10 @@ class VideoExporter: ObservableObject {
             outputURL.path
         ]
 
+        // Capture error output for debugging normalization issues
+        let errorPipe = Pipe()
         process.standardOutput = FileHandle.nullDevice
-        process.standardError = FileHandle.nullDevice
+        process.standardError = errorPipe
         process.standardInput = FileHandle.nullDevice
 
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
@@ -164,7 +192,20 @@ class VideoExporter: ObservableObject {
                 if proc.terminationStatus == 0 {
                     continuation.resume()
                 } else {
-                    continuation.resume(throwing: ExporterError.exportFailed("Normalization failed with code \(proc.terminationStatus)"))
+                    // Read error output
+                    let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+                    let errorOutput = String(data: errorData, encoding: .utf8) ?? ""
+                    print("Normalization failed. FFmpeg error output:")
+                    print(errorOutput)
+
+                    // Extract useful error lines
+                    let errorLines = errorOutput.components(separatedBy: .newlines)
+                        .filter { $0.contains("Error") || $0.contains("Invalid") || $0.contains("failed") || $0.contains("Task finished") }
+                        .suffix(5)
+                        .joined(separator: "; ")
+
+                    let errorMessage = errorLines.isEmpty ? "Normalization failed with code \(proc.terminationStatus)" : errorLines
+                    continuation.resume(throwing: ExporterError.exportFailed(errorMessage))
                 }
             }
 
@@ -353,6 +394,29 @@ class VideoExporter: ObservableObject {
             // Calculate correct framerate from frame duration
             let actualFramerate = 1.0 / frameDuration
 
+            // For "Original (No Letterbox)" mode, detect maximum dimensions from both sequences
+            var normalizationResolution = settings.normalizationResolution
+            if settings.normalizationResolution == .original {
+                // Get dimensions from first image of each sequence
+                let primaryDims = getImageDimensions(items.first?.processedURL) ?? (1920, 1080)
+                let secondaryDims = getImageDimensions(secondaryItems.first?.processedURL) ?? (1920, 1080)
+
+                // Use maximum dimensions to ensure both fit
+                let maxWidth = max(primaryDims.width, secondaryDims.width)
+                let maxHeight = max(primaryDims.height, secondaryDims.height)
+
+                // Create a custom resolution based on max dimensions (ensure even numbers)
+                let evenWidth = (maxWidth + 1) & ~1
+                let evenHeight = (maxHeight + 1) & ~1
+
+                print("Comparison mode with different dimensions: primary=\(primaryDims), secondary=\(secondaryDims)")
+                print("Normalizing both to: \(evenWidth)x\(evenHeight)")
+
+                // Create a temporary normalization resolution with these dimensions
+                // We'll pass the dimensions directly to normalizeSequence
+                normalizationResolution = .original  // Will be handled specially below
+            }
+
             // Step 1: Normalize primary sequence
             let normalizedPrimary = tempDir.appendingPathComponent("primary_normalized.mp4")
             try await normalizeSequence(
@@ -360,7 +424,9 @@ class VideoExporter: ObservableObject {
                 concatFile: concatFileURL,
                 outputURL: normalizedPrimary,
                 framerate: actualFramerate,
-                targetResolution: settings.normalizationResolution
+                targetResolution: normalizationResolution,
+                items: items,
+                secondaryItems: secondaryItems
             )
             primaryVideoURL = normalizedPrimary
 
@@ -371,7 +437,9 @@ class VideoExporter: ObservableObject {
                 concatFile: secConcat,
                 outputURL: normalizedSecondary,
                 framerate: actualFramerate,
-                targetResolution: settings.normalizationResolution
+                targetResolution: normalizationResolution,
+                items: items,
+                secondaryItems: secondaryItems
             )
             secondaryVideoURL = normalizedSecondary
         }

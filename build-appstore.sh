@@ -137,13 +137,13 @@ fi
 # Sign the app with App Store entitlements
 echo "🔐 Signing for App Store..."
 
-# First sign the FFmpeg binary
+# First sign the FFmpeg binary WITHOUT sandbox entitlements
+# The bundled binary inherits the app's sandbox, but shouldn't be sandboxed itself
 codesign --force --options runtime \
     --sign "$SIGNING_IDENTITY" \
-    --entitlements "SequenceStitchAppStore.entitlements" \
     "$RESOURCES/ffmpeg"
 
-# Then sign the main app
+# Then sign the main app with sandbox entitlements
 codesign --force --options runtime \
     --sign "$SIGNING_IDENTITY" \
     --entitlements "SequenceStitchAppStore.entitlements" \
