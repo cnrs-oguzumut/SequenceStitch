@@ -40,7 +40,7 @@ struct SidebarView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     StatRow(label: "Images", value: "\(sequenceManager.items.count)")
                     
-                    let totalDuration = Double(sequenceManager.items.count) * sequenceManager.frameDuration
+                    let totalDuration = Double(sequenceManager.items.count) * sequenceManager.effectiveFrameDuration
                     StatRow(label: "Duration", value: formatDuration(totalDuration))
                 }
                 .padding(20)
@@ -85,23 +85,76 @@ struct SidebarView: View {
                     Text("Export Settings")
                         .font(.headline)
                     
-                    // Frame duration
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Frame Duration")
+                    // Time-lapse Calculator Toggle
+                    Toggle(isOn: $sequenceManager.isTimeLapseMode) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Time-lapse Calculator")
                                 .font(.subheadline)
-                            Spacer()
-                            Text(String(format: "%.1fs", sequenceManager.frameDuration))
-                                .font(.subheadline.monospacedDigit())
+                            Text("Set target duration, auto-calculate timing")
+                                .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }
-                        
-                        Slider(
-                            value: $sequenceManager.frameDuration,
-                            in: 0.1...10.0,
-                            step: 0.1
-                        )
-                        .tint(Color(red: 0.2, green: 0.4, blue: 0.8))
+                    }
+                    .toggleStyle(.switch)
+                    .tint(Color(red: 0.2, green: 0.6, blue: 0.4))
+                    
+                    if sequenceManager.isTimeLapseMode {
+                        // Target Duration (Time-lapse mode)
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("Target Duration")
+                                    .font(.subheadline)
+                                Spacer()
+                                Text(formatDuration(sequenceManager.targetDuration))
+                                    .font(.subheadline.monospacedDigit())
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            Slider(
+                                value: $sequenceManager.targetDuration,
+                                in: 1...300,
+                                step: 1
+                            )
+                            .tint(Color(red: 0.2, green: 0.6, blue: 0.4))
+                            
+                            // Show calculated frame duration
+                            if sequenceManager.items.count > 0 {
+                                HStack {
+                                    Image(systemName: "function")
+                                        .foregroundStyle(.green)
+                                    Text("Frame: \(String(format: "%.3fs", sequenceManager.effectiveFrameDuration))")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    Spacer()
+                                    Text("\(sequenceManager.items.count) frames")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .padding(.top, 4)
+                            }
+                        }
+                        .padding(12)
+                        .background(Color.green.opacity(0.1))
+                        .cornerRadius(8)
+                    } else {
+                        // Manual Frame Duration
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("Frame Duration")
+                                    .font(.subheadline)
+                                Spacer()
+                                Text(String(format: "%.1fs", sequenceManager.frameDuration))
+                                    .font(.subheadline.monospacedDigit())
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            Slider(
+                                value: $sequenceManager.frameDuration,
+                                in: 0.1...10.0,
+                                step: 0.1
+                            )
+                            .tint(Color(red: 0.2, green: 0.4, blue: 0.8))
+                        }
                     }
                     
                     // Output Format

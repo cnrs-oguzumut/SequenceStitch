@@ -127,7 +127,7 @@ struct PreviewView: View {
     private func startPlayback() {
         isPlaying = true
         let itemCount = sequenceManager.items.count
-        let duration = sequenceManager.frameDuration
+        let duration = sequenceManager.effectiveFrameDuration
         
         timer = Timer.scheduledTimer(withTimeInterval: duration, repeats: true) { [self] _ in
             Task { @MainActor in

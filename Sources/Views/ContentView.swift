@@ -462,7 +462,7 @@ struct ContentView: View {
                 try await exporter.export(
                     items: sequenceManager.items,
                     secondaryItems: sequenceManager.secondaryItems,
-                    frameDuration: sequenceManager.frameDuration,
+                    frameDuration: sequenceManager.effectiveFrameDuration,
                     settings: sequenceManager.exportSettings,
                     outputURL: url
                 ) { progress in

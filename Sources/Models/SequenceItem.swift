@@ -50,10 +50,20 @@ class SequenceManager: ObservableObject {
         }
     }
     @Published var frameDuration: Double = 2.0 // seconds per frame
+    @Published var isTimeLapseMode: Bool = false // Time-lapse calculator mode
+    @Published var targetDuration: Double = 30.0 // Target total video duration in seconds
     @Published var isExporting: Bool = false
     @Published var exportProgress: Double = 0.0
     @Published var exportError: String?
     @Published var exportSettings = ExportSettings()
+    
+    // Computed frame duration for time-lapse mode
+    var effectiveFrameDuration: Double {
+        if isTimeLapseMode && items.count > 0 {
+            return targetDuration / Double(items.count)
+        }
+        return frameDuration
+    }
     
     // Import State
     @Published var isImportingVideo: Bool = false
