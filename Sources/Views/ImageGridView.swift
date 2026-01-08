@@ -325,33 +325,28 @@ struct ImageGridView: View {
         do {
             try FileManager.default.copyItem(at: tempURL, to: permanentURL)
 
-            let processedURLs = try PDFProcessor.renderAllPages(of: permanentURL, dpi: 300)
-            let dateCreated = PDFProcessor.getCreationDate(of: permanentURL)
-            
-            var items: [SequenceItem] = []
-            
-            for (index, processedURL) in processedURLs.enumerated() {
-                guard let thumbnail = PDFProcessor.createThumbnail(from: processedURL) else {
-                    continue
-                }
+            let processedURL = try PDFProcessor.renderFirstPage(of: permanentURL, dpi: 300)
 
-                let item = SequenceItem(
-                    originalURL: permanentURL,
-                    processedURL: processedURL,
-                    thumbnail: thumbnail,
-                    dateCreated: dateCreated,
-                    originalFilename: "\(tempURL.lastPathComponent) (Page \(index + 1))",
-                    isFromPDF: true
-                )
-                items.append(item)
+            guard let thumbnail = PDFProcessor.createThumbnail(from: processedURL) else {
+                return
             }
+
+            let dateCreated = PDFProcessor.getCreationDate(of: permanentURL)
+
+            let item = SequenceItem(
+                originalURL: permanentURL,
+                processedURL: processedURL,
+                thumbnail: thumbnail,
+                dateCreated: dateCreated,
+                originalFilename: tempURL.lastPathComponent,
+                isFromPDF: true
+            )
 
             Task { @MainActor in
-                sequenceManager.addItems(items, toSecondary: toSecondary)
+                sequenceManager.addItem(item, toSecondary: toSecondary)
             }
 
-            // We don't remove permanentURL here because it serves as the originalURL for all items
-            // It will be cleaned up when the items are removed or the app closes (temp dir)
+            try? FileManager.default.removeItem(at: permanentURL)
 
         } catch {
             print("PDF processing error: \(error)")
