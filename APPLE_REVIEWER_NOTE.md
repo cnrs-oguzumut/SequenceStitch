@@ -14,14 +14,15 @@ We have provided a set of test assets in the repository/package to demonstrate t
 
 - **JPEGs (`test_assets/jpegs/`)**: 19 high-quality landscape photos for standard time-lapse mapping.
 - **PNGs (`test_assets/pngs/`)**: 10 high-quality frames for testing transparent or lossless sequences.
-- **PDFs (`test_assets/pdfs/`)**: Individual PDF copies of the test images to verify "One PDF = One Frame" handling.
-- **Test Videos (`test_assets/*.mp4`)**: Two sample movies (`test_video_5mb.mp4` and `test_video_pattern_5mb.mp4`) provided specifically to test the **Video Import & Frame Extraction** feature.
+- **PDFs (`test_assets/pdfs/`)**: Individual PDF copies for testing single-document handling.
+- **Consolidated PDF (`test_assets/MultiPage_Test_Document.pdf`)**: A 19-page test document specifically provided to verify that the application correctly extracts **every page** as a separate frame (not just the first one).
+- **Test Videos (`test_assets/*.mp4`)**: Two sample movies provided to test the **Video Import & Frame Extraction** feature.
 
 ### Suggested Review Flow
 1. **Standard Mode**: Drag the contents of the `jpegs` or `pngs` folder into the grid. Play the preview. Export as MP4.
 2. **Comparison Mode**: Toggle "Comparison Mode" in the toolbar. Drag JPEG images 1-10 to the left panel (A) and 11-19 to the right panel (B). Choose "Side-by-Side" and Export.
 3. **Video Import**: Drag one of the provided MP4 movies into the app. It will automatically extract frames at 10 FPS with real-time progress.
-4. **PDF Mode**: Drag the individual PDF files or the consolidated PDF into the app to test document-to-video conversion.
+4. **Multi-Page PDF**: Drag `MultiPage_Test_Document.pdf` into the app. It will automatically convert all 19 pages into 19 high-resolution sequence frames.
 
 ## Privacy & Safety
 - **100% Local**: No data ever leaves the user's machine.

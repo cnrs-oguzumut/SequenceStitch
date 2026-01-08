@@ -21,76 +21,88 @@ enum PDFProcessor {
         }
     }
     
-    /// Renders the first page of a PDF to a high-resolution PNG
+    /// Renders all pages of a PDF to high-resolution PNGs
     /// - Parameters:
     ///   - pdfURL: URL to the PDF file
     ///   - dpi: Resolution for rendering (default 300 DPI)
-    /// - Returns: URL to the generated PNG in the temporary directory
-    static func renderFirstPage(of pdfURL: URL, dpi: CGFloat = 300) throws -> URL {
+    /// - Returns: Array of URLs to the generated PNGs in the temporary directory
+    static func renderAllPages(of pdfURL: URL, dpi: CGFloat = 300) throws -> [URL] {
         guard let document = PDFDocument(url: pdfURL) else {
             throw PDFProcessorError.cannotOpenDocument
         }
         
-        guard let page = document.page(at: 0) else {
+        var outputURLs: [URL] = []
+        let pageCount = document.pageCount
+        
+        for i in 0..<pageCount {
+            guard let page = document.page(at: i) else { continue }
+            
+            // Get page bounds (in points, 72 points = 1 inch)
+            let pageBounds = page.bounds(for: .mediaBox)
+            
+            // Calculate scale for desired DPI
+            let scale = dpi / 72.0
+            
+            let width = Int(pageBounds.width * scale)
+            let height = Int(pageBounds.height * scale)
+            
+            // Create bitmap context
+            let colorSpace = CGColorSpaceCreateDeviceRGB()
+            guard let context = CGContext(
+                data: nil,
+                width: width,
+                height: height,
+                bitsPerComponent: 8,
+                bytesPerRow: 0,
+                space: colorSpace,
+                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
+            ) else {
+                continue
+            }
+            
+            // Fill with white background
+            context.setFillColor(CGColor.white)
+            context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+            
+            // Scale and draw PDF page
+            context.saveGState()
+            context.scaleBy(x: scale, y: scale)
+            if let pageRef = page.pageRef {
+                context.drawPDFPage(pageRef)
+            }
+            context.restoreGState()
+            
+            guard let cgImage = context.makeImage() else { continue }
+            
+            // Create NSImage from CGImage
+            let nsImage = NSImage(cgImage: cgImage, size: NSSize(width: width, height: height))
+            
+            // Save to temporary directory
+            let tempDir = FileManager.default.temporaryDirectory
+            let filename = pdfURL.deletingPathExtension().lastPathComponent + "_page\(i+1).png"
+            let outputURL = tempDir.appendingPathComponent(filename)
+            
+            guard let tiffData = nsImage.tiffRepresentation,
+                  let bitmapRep = NSBitmapImageRep(data: tiffData),
+                  let pngData = bitmapRep.representation(using: .png, properties: [:]) else {
+                continue
+            }
+            
+            try pngData.write(to: outputURL)
+            outputURLs.append(outputURL)
+        }
+        
+        if outputURLs.isEmpty {
             throw PDFProcessorError.noPages
         }
         
-        // Get page bounds (in points, 72 points = 1 inch)
-        let pageBounds = page.bounds(for: .mediaBox)
-        
-        // Calculate scale for desired DPI (72 points = 1 inch at 72 DPI)
-        let scale = dpi / 72.0
-        
-        let width = Int(pageBounds.width * scale)
-        let height = Int(pageBounds.height * scale)
-        
-        // Create bitmap context
-        let colorSpace = CGColorSpaceCreateDeviceRGB()
-        guard let context = CGContext(
-            data: nil,
-            width: width,
-            height: height,
-            bitsPerComponent: 8,
-            bytesPerRow: 0,
-            space: colorSpace,
-            bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
-        ) else {
-            throw PDFProcessorError.renderFailed
-        }
-        
-        // Fill with white background
-        context.setFillColor(CGColor.white)
-        context.fill(CGRect(x: 0, y: 0, width: width, height: height))
-        
-        // Scale and draw PDF page
-        context.scaleBy(x: scale, y: scale)
-        
-        // Draw the PDF page
-        if let pageRef = page.pageRef {
-            context.drawPDFPage(pageRef)
-        }
-        
-        guard let cgImage = context.makeImage() else {
-            throw PDFProcessorError.renderFailed
-        }
-        
-        // Create NSImage from CGImage
-        let nsImage = NSImage(cgImage: cgImage, size: NSSize(width: width, height: height))
-        
-        // Save to temporary directory
-        let tempDir = FileManager.default.temporaryDirectory
-        let filename = pdfURL.deletingPathExtension().lastPathComponent + "_page1.png"
-        let outputURL = tempDir.appendingPathComponent(filename)
-        
-        guard let tiffData = nsImage.tiffRepresentation,
-              let bitmapRep = NSBitmapImageRep(data: tiffData),
-              let pngData = bitmapRep.representation(using: .png, properties: [:]) else {
-            throw PDFProcessorError.saveFailed
-        }
-        
-        try pngData.write(to: outputURL)
-        
-        return outputURL
+        return outputURLs
+    }
+    
+    /// Renders the first page of a PDF to a high-resolution PNG
+    static func renderFirstPage(of pdfURL: URL, dpi: CGFloat = 300) throws -> URL {
+        let urls = try renderAllPages(of: pdfURL, dpi: dpi)
+        return urls[0]
     }
     
     /// Creates a thumbnail from an image file

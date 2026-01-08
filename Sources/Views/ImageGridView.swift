@@ -325,28 +325,33 @@ struct ImageGridView: View {
         do {
             try FileManager.default.copyItem(at: tempURL, to: permanentURL)
 
-            let processedURL = try PDFProcessor.renderFirstPage(of: permanentURL, dpi: 300)
-
-            guard let thumbnail = PDFProcessor.createThumbnail(from: processedURL) else {
-                return
-            }
-
+            let processedURLs = try PDFProcessor.renderAllPages(of: permanentURL, dpi: 300)
             let dateCreated = PDFProcessor.getCreationDate(of: permanentURL)
+            
+            var items: [SequenceItem] = []
+            
+            for (index, processedURL) in processedURLs.enumerated() {
+                guard let thumbnail = PDFProcessor.createThumbnail(from: processedURL) else {
+                    continue
+                }
 
-            let item = SequenceItem(
-                originalURL: permanentURL,
-                processedURL: processedURL,
-                thumbnail: thumbnail,
-                dateCreated: dateCreated,
-                originalFilename: tempURL.lastPathComponent,
-                isFromPDF: true
-            )
+                let item = SequenceItem(
+                    originalURL: permanentURL,
+                    processedURL: processedURL,
+                    thumbnail: thumbnail,
+                    dateCreated: dateCreated,
+                    originalFilename: "\(tempURL.lastPathComponent) (Page \(index + 1))",
+                    isFromPDF: true
+                )
+                items.append(item)
+            }
 
             Task { @MainActor in
-                sequenceManager.addItem(item, toSecondary: toSecondary)
+                sequenceManager.addItems(items, toSecondary: toSecondary)
             }
 
-            try? FileManager.default.removeItem(at: permanentURL)
+            // We don't remove permanentURL here because it serves as the originalURL for all items
+            // It will be cleaned up when the items are removed or the app closes (temp dir)
 
         } catch {
             print("PDF processing error: \(error)")
