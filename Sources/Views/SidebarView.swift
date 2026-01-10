@@ -297,6 +297,7 @@ struct SidebarView: View {
                 endPoint: .bottom
             )
         )
+        .preferredColorScheme(.dark)
     }
     
     private func formatDuration(_ seconds: Double) -> String {

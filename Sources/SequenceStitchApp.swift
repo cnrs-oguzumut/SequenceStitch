@@ -12,7 +12,7 @@ struct SequenceStitchApp: App {
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 1200, height: 800)
         .commands {
-            CommandGroup(replacing: .newItem) { }
+
             CommandGroup(after: .appInfo) {
                 Button("About SequenceStitch") {
                     NSApp.orderFrontStandardAboutPanel(options: [
